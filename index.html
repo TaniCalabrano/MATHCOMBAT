@@ -255,6 +255,11 @@ input:focus,select:focus{border-color:#a78bfa;}
     <div class="hand-title" id="hand-title">Tu mano</div>
     <div class="hand" id="my-hand"></div>
   </div>
+
+  <!-- Boton rendirse -->
+  <div style="margin-top:.5rem;">
+    <button class="btn btn-red" id="btn-surrender" style="opacity:.7;font-size:13px;padding:8px;">🏳 Rendirse</button>
+  </div>
 </div>
 
 <!-- RESULTADO -->
@@ -278,6 +283,27 @@ input:focus,select:focus{border-color:#a78bfa;}
       </div>
     </div>
     <button class="btn btn-purple" id="btn-home">Nueva partida</button>
+  </div>
+</div>
+
+<!-- MODAL RENDIRSE -->
+<div class="modal" id="modal-surrender">
+  <div class="modal-box">
+    <div style="font-size:40px;margin-bottom:.5rem;">🏳</div>
+    <div class="modal-title">Rendirse</div>
+    <div class="modal-sub">Si te rindes, el oponente gana automaticamente. ¿Estas seguro?</div>
+    <button class="btn btn-red" id="btn-surrender-confirm" style="margin-bottom:.5rem;">Si, me rindo</button>
+    <button class="btn" id="btn-surrender-cancel">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL DESCONEXION -->
+<div class="modal" id="modal-disconnect">
+  <div class="modal-box">
+    <div style="font-size:40px;margin-bottom:.5rem;">📡</div>
+    <div class="modal-title" id="dc-title">Oponente desconectado</div>
+    <div class="modal-sub" id="dc-sub">Tu oponente abandono la partida.</div>
+    <button class="btn btn-purple" id="btn-dc-home">Volver al inicio</button>
   </div>
 </div>
 
@@ -515,6 +541,13 @@ document.getElementById("btn-start").addEventListener("click",hostStart);
 document.getElementById("btn-cancel").addEventListener("click",leaveRoom);
 document.getElementById("btn-gleave").addEventListener("click",leaveRoom);
 document.getElementById("btn-home").addEventListener("click",goHome);
+document.getElementById("btn-surrender").addEventListener("click",()=>openModal("modal-surrender"));
+document.getElementById("btn-surrender-cancel").addEventListener("click",()=>closeModal("modal-surrender"));
+document.getElementById("btn-surrender-confirm").addEventListener("click",doSurrender);
+document.getElementById("btn-dc-home").addEventListener("click",()=>{
+  closeModal("modal-disconnect");
+  leaveRoom();
+});
 document.getElementById("btn-cara").addEventListener("click",()=>pickCoin("cara"));
 document.getElementById("btn-sello").addEventListener("click",()=>pickCoin("sello"));
 document.getElementById("btn-sp-ok").addEventListener("click",()=>{
@@ -610,6 +643,19 @@ async function initGame(){
     const g=snap.val();if(!g)return;
     syncGameState(g);
   });
+
+  // Detectar desconexion del oponente — si el campo guest se vacia durante el juego
+  onValue(ref(db,"rooms/"+roomCode+"/guest"),snap=>{
+    const g=snap.val();
+    // Solo aplica si ya estamos en juego
+    const currentScreen=document.querySelector(".screen.active");
+    if(currentScreen&&currentScreen.id==="s-game"&&myRole==="host"&&(!g||g==="")){
+      closeModal("modal-coin");closeModal("modal-roulette");closeModal("modal-surrender");
+      document.getElementById("dc-title").textContent="Oponente desconectado";
+      document.getElementById("dc-sub").textContent="Tu oponente abandono la partida. Tu ganas!";
+      openModal("modal-disconnect");
+    }
+  });
 }
 
 // =====================================================================
@@ -662,7 +708,19 @@ function syncGameState(g){
   }
 
   if(g.phase==="finished"){
-    showResult(g);
+    showResult(g);return;
+  }
+
+  // Detectar si el oponente se rindio o abandono
+  if(g.surrendered!==undefined && g.surrendered!==-1){
+    const myIdx2=myRole==="host"?0:1;
+    if(g.surrendered!==myIdx2){
+      closeModal("modal-coin");closeModal("modal-roulette");closeModal("modal-surrender");
+      document.getElementById("dc-title").textContent="Oponente se rindio";
+      document.getElementById("dc-sub").textContent="Tu oponente abandono el combate. Eres el ganador!";
+      openModal("modal-disconnect");
+    }
+    return;
   }
 }
 
@@ -1019,6 +1077,27 @@ function updateTimerBar(total){
   const b=document.getElementById("timer-fill");
   b.style.width=pct+"%";
   b.style.background=pct>50?"#a78bfa":pct>25?"#f59e0b":"#f87171";
+}
+
+// =====================================================================
+// RENDIRSE
+// =====================================================================
+async function doSurrender(){
+  closeModal("modal-surrender");
+  const myIdx=myRole==="host"?0:1;
+  if(roomRef){
+    await update(ref(db,"rooms/"+roomCode+"/game"),{
+      surrendered:myIdx,
+      phase:"surrendered",
+      ts:Date.now()
+    });
+  }
+  // Yo veo pantalla de derrota
+  clearInterval(timerInt);
+  if(gameUnsub){gameUnsub();gameUnsub=null;}
+  document.getElementById("dc-title").textContent="Te rendiste";
+  document.getElementById("dc-sub").textContent="Abandonaste el combate. El oponente gana.";
+  openModal("modal-disconnect");
 }
 
 // =====================================================================

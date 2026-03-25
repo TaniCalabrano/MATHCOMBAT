@@ -151,6 +151,22 @@ input:focus,select:focus{border-color:#a78bfa;}
 .res-box .rh{font-size:11px;color:#666;margin-top:2px;}
 
 .katex{color:#e8e8f0!important;}
+
+/* PANTALLA REPARTO */
+.deal-screen{text-align:center;padding:1rem 0;}
+.deal-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;}
+.deal-msg{font-size:13px;color:#a78bfa;min-height:20px;margin-bottom:1.25rem;font-style:italic;transition:opacity .5s;}
+.deck-area{position:relative;width:100%;height:120px;margin-bottom:1.25rem;}
+.deck-stack{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);}
+.deck-back{position:absolute;width:54px;height:76px;border-radius:8px;background:linear-gradient(135deg,#2a1a4a,#1a0f30);border:1.5px solid #7c3aed;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 12px rgba(0,0,0,.6);}
+.hand-deal-area{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;min-height:80px;margin-bottom:1rem;}
+.deal-slot{width:48px;height:68px;border-radius:7px;border:1.5px dashed #2a2a50;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:#444;transition:all .3s;}
+.deal-slot.filled-normal{background:linear-gradient(160deg,#1a2a4a,#0f1a30);border:1.5px solid #3b82f6;color:#60a5fa;}
+.deal-slot.filled-strong{background:linear-gradient(160deg,#2a1a4a,#1a0f30);border:1.5px solid #8b5cf6;color:#c4b5fd;}
+.deal-slot.filled-legend{background:linear-gradient(160deg,#3a2a0a,#2a1a00);border:1.5px solid #f59e0b;color:#fcd34d;}
+.deal-slot.filled-special{background:linear-gradient(160deg,#0a3a2a,#001a10);border:1.5px solid #10b981;color:#6ee7b7;}
+.deal-slot .slot-icon{font-size:18px;margin-bottom:2px;}
+.deal-slot .slot-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
 </style>
 </head>
 <body>
@@ -199,6 +215,19 @@ input:focus,select:focus{border-color:#a78bfa;}
     <div class="wait-small">Esperando que el anfitrion inicie<span class="dot"></span></div>
     <div class="info" id="g-info"></div>
     <button class="btn btn-red" id="btn-gleave">Salir</button>
+  </div>
+</div>
+
+<!-- PANTALLA REPARTO DE CARTAS -->
+<div class="screen" id="s-deal">
+  <div class="deal-screen">
+    <div class="deal-title">Repartiendo cartas...</div>
+    <div class="deal-msg" id="deal-msg">Preparando tu mano de combate</div>
+    <div class="deck-area">
+      <div class="deck-stack" id="deck-stack"></div>
+    </div>
+    <div class="hand-deal-area" id="deal-slots"></div>
+    <div class="info" id="deal-info" style="min-height:16px;"></div>
   </div>
 </div>
 
@@ -637,6 +666,18 @@ async function initGame(){
   document.getElementById("fr-p2").textContent=AVNAMES[cAv.guest]||"";
   document.getElementById("av-p2").innerHTML=AVS[cAv.guest]||AVS.robot;
   renderHP(0,MAX_HP);renderHP(1,MAX_HP);
+
+  // Obtener mi mano para la animación
+  const gameSnap=await get(ref(db,"rooms/"+roomCode+"/game"));
+  const gData=normalizeGame(gameSnap.val());
+  const myIdx=myRole==="host"?0:1;
+  const myHand=gData&&gData.hands?gData.hands[myIdx]:[];
+
+  // Mostrar animación de reparto primero
+  ss("s-deal");
+  await animateDeal(myHand);
+
+  // Luego ir al juego
   ss("s-game");
 
   gameUnsub=onValue(ref(db,"rooms/"+roomCode+"/game"),snap=>{
@@ -644,10 +685,9 @@ async function initGame(){
     syncGameState(g);
   });
 
-  // Detectar desconexion del oponente — si el campo guest se vacia durante el juego
+  // Detectar desconexion del oponente
   onValue(ref(db,"rooms/"+roomCode+"/guest"),snap=>{
     const g=snap.val();
-    // Solo aplica si ya estamos en juego
     const currentScreen=document.querySelector(".screen.active");
     if(currentScreen&&currentScreen.id==="s-game"&&myRole==="host"&&(!g||g==="")){
       closeModal("modal-coin");closeModal("modal-roulette");closeModal("modal-surrender");
@@ -655,6 +695,131 @@ async function initGame(){
       document.getElementById("dc-sub").textContent="Tu oponente abandono la partida. Tu ganas!";
       openModal("modal-disconnect");
     }
+  });
+}
+
+// =====================================================================
+// ANIMACIÓN REPARTO DE CARTAS
+// =====================================================================
+const DEAL_MESSAGES = [
+  "Preparando tu mano de combate...",
+  "Pregunta de forma inteligente para ganar este combate.",
+  "Defiendete con tus conocimientos.",
+  "Cada carta es un arma. Usala con sabiduria.",
+  "El conocimiento es tu escudo y tu espada."
+];
+
+function animateDeal(hand){
+  return new Promise(resolve=>{
+    const stack=document.getElementById("deck-stack");
+    const slots=document.getElementById("deal-slots");
+    const msgEl=document.getElementById("deal-msg");
+    const infoEl=document.getElementById("deal-info");
+    stack.innerHTML="";slots.innerHTML="";
+    infoEl.textContent="";
+
+    // Crear mazo de fondo (cartas apiladas)
+    for(let i=6;i>=0;i--){
+      const c=document.createElement("div");
+      c.className="deck-back";
+      c.style.cssText=`top:${i*-2}px;left:${i*1}px;z-index:${i};`;
+      c.textContent="🎴";
+      stack.appendChild(c);
+    }
+
+    // Crear 7 slots vacíos para la mano
+    for(let i=0;i<7;i++){
+      const s=document.createElement("div");
+      s.className="deal-slot";
+      s.id="dslot-"+i;
+      s.textContent="";
+      slots.appendChild(s);
+    }
+
+    let msgIdx=0;
+    msgEl.textContent=DEAL_MESSAGES[0];
+
+    // Rotar mensajes mientras se reparten
+    const msgInterval=setInterval(()=>{
+      msgIdx=(msgIdx+1)%DEAL_MESSAGES.length;
+      msgEl.style.opacity="0";
+      setTimeout(()=>{
+        msgEl.textContent=DEAL_MESSAGES[msgIdx];
+        msgEl.style.opacity="1";
+      },250);
+    },1400);
+
+    // Repartir cartas una por una
+    const safeHand=Array.isArray(hand)?hand:Object.values(hand||{});
+    let cardIdx=0;
+
+    function dealNext(){
+      if(cardIdx>=7){
+        clearInterval(msgInterval);
+        msgEl.style.opacity="0";
+        setTimeout(()=>{
+          msgEl.textContent="Tu mano esta lista. Buen combate!";
+          msgEl.style.opacity="1";
+          infoEl.textContent="Iniciando en 2 segundos...";
+        },300);
+        setTimeout(()=>resolve(),2200);
+        return;
+      }
+
+      const card=safeHand[cardIdx]||{type:"normal",label:"Normal",dmg:15,color:"card-normal"};
+      const slot=document.getElementById("dslot-"+cardIdx);
+
+      // Animar: la carta del tope del mazo "vuela" hacia el slot
+      const topCard=stack.lastElementChild;
+      if(topCard){
+        topCard.style.transition="all 0.45s cubic-bezier(.34,1.2,.64,1)";
+        topCard.style.transform="translate(-50%, 80px) scale(0.85)";
+        topCard.style.opacity="0";
+        setTimeout(()=>{
+          if(topCard.parentNode) topCard.remove();
+        },450);
+      }
+
+      // Llenar el slot con la carta real
+      setTimeout(()=>{
+        if(slot){
+          const typeClass = card.color||"card-normal";
+          const cleanType = typeClass.replace("card-","");
+          slot.className="deal-slot filled-"+cleanType;
+          const icon = card.type==="special"?(card.icon||"✨"):
+                       cleanType==="legend"?"⚡":
+                       cleanType==="strong"?"🔥":"⚔️";
+          slot.innerHTML=`<div class="slot-icon">${icon}</div><div class="slot-lbl">${card.label||"Normal"}</div>`;
+          // Pequeño bounce al aparecer
+          slot.style.transform="scale(1.2)";
+          setTimeout(()=>slot.style.transform="scale(1)",150);
+        }
+        cardIdx++;
+        setTimeout(dealNext, 380);
+      },250);
+    }
+
+    // Pequeña pausa inicial para efecto de barajar
+    setTimeout(()=>{
+      // Efecto barajar: mover el mazo de lado a lado 3 veces
+      let shuffleCount=0;
+      const deckCards=stack.querySelectorAll(".deck-back");
+      function shuffleAnim(){
+        if(shuffleCount>=3){dealNext();return;}
+        deckCards.forEach((c,i)=>{
+          c.style.transition="transform 0.12s ease";
+          c.style.transform=`translate(${shuffleCount%2===0?6:-6}px, ${i*-2}px) rotate(${shuffleCount%2===0?3:-3}deg)`;
+        });
+        setTimeout(()=>{
+          deckCards.forEach((c,i)=>{
+            c.style.transform=`translate(${i}px, ${i*-2}px)`;
+          });
+          shuffleCount++;
+          setTimeout(shuffleAnim,150);
+        },120);
+      }
+      shuffleAnim();
+    },400);
   });
 }
 

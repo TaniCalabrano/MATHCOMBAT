@@ -1727,10 +1727,18 @@ function showResult(g){
 
   if(!roomRef) return;
 
-  // Escuchar campo rematch en Firebase
+  // AMBOS jugadores escuchan status desde aqui
+  // Cuando el host escriba "coin" ambos inician el juego
+  const statusUnsubResult=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
+    if(snap.val()==="coin"){
+      statusUnsubResult();
+      initGame();
+    }
+  });
+
+  // Escuchar campo rematch para mostrar UI
   const rematchRef=ref(db,"rooms/"+roomCode+"/rematch");
   const rematchUnsub=onValue(rematchRef,snap=>{
-    // Normalizar — Firebase puede devolver objeto en lugar de array
     let r=snap.val();
     if(!r) return;
     if(!Array.isArray(r)) r=Object.values(r);
@@ -1738,22 +1746,11 @@ function showResult(g){
     const myIdx=myRole==="host"?0:1;
     const oppIdx=1-myIdx;
 
-    // Ambos aceptaron
+    // Ambos aceptaron — solo el host ejecuta doRematch
     if(r[0]===true && r[1]===true){
-      rematchUnsub(); // desuscribir
-      if(myRole==="host"){
-        // Host inicia la revancha
-        doRematch();
-      } else {
-        // Guest espera que status cambie a "coin"
-        document.getElementById("rematch-status").textContent="Iniciando revancha...";
-        const rematchStatusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap2=>{
-          if(snap2.val()==="coin"){
-            rematchStatusUnsub();
-            initGame();
-          }
-        });
-      }
+      rematchUnsub();
+      if(myRole==="host") doRematch();
+      else document.getElementById("rematch-status").textContent="Iniciando revancha...";
       return;
     }
 

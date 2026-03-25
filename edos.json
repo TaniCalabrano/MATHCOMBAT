@@ -1,0 +1,121 @@
+[
+  {
+    "t": "EDOs",
+    "q": "\\text{Sol. general de }y'=y",
+    "opts": ["y=Cx","y=Ce^x","y=C+e^x","y=\\ln x+C"],
+    "ans": 1,
+    "nivel": "normal"
+  },
+  {
+    "t": "EDOs",
+    "q": "y'+y=0,\\;y(0)=2\\Rightarrow y=",
+    "opts": ["2e^{-x}","2e^x","e^{-x}+1","2x+2"],
+    "ans": 0,
+    "nivel": "normal"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Una EDO separable tiene la forma:}",
+    "opts": ["y''=f(x,y)","y'=f(x)g(y)","y'+P(x)y=0","y''+P(x)y=Q(x)"],
+    "ans": 1,
+    "nivel": "normal"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Metodo numerico para }y'=f(x,y)",
+    "opts": ["\\text{Sep. variables}","\\text{Euler}","\\text{F. integrante}","\\text{Var. parametros}"],
+    "ans": 1,
+    "nivel": "normal"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Orden de la EDO }y''+3y'-2y=0",
+    "opts": ["1","2","3","0"],
+    "ans": 1,
+    "nivel": "normal"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Factor integrante de }y'+P(x)y=Q(x)",
+    "opts": ["e^{P(x)}","e^{\\int P(x)dx}","\\int P(x)dx","\\frac{1}{P(x)}"],
+    "ans": 1,
+    "nivel": "normal"
+  },
+  {
+    "t": "EDOs",
+    "q": "y''+4y=0\\text{ es de tipo:}",
+    "opts": ["\\text{No lineal}","\\text{Lin. orden 2 hom.}","\\text{Lin. orden 1}","\\text{Bernoulli}"],
+    "ans": 1,
+    "nivel": "normal"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Raices de }y''-y=0",
+    "opts": ["r=\\pm i","r=0,1","r=\\pm 1","r=1\\text{ doble}"],
+    "ans": 2,
+    "nivel": "fuerte"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Pol. caract. de }y''+2y'+y=0",
+    "opts": ["r^2+2r+1=0","r^2-2r+1=0","r^2+2=0","r+1=0"],
+    "ans": 0,
+    "nivel": "fuerte"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Sol. general de }y''-y=0",
+    "opts": ["C_1e^x+C_2e^{-x}","C_1\\cos x+C_2\\sin x","C_1e^{2x}","(C_1+C_2x)e^x"],
+    "ans": 0,
+    "nivel": "fuerte"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Si }r=\\pm bi,\\text{ la sol. general es:}",
+    "opts": ["C_1e^{bx}+C_2e^{-bx}","C_1\\cos(bx)+C_2\\sin(bx)","(C_1+C_2x)e^{bx}","C_1e^{ibx}"],
+    "ans": 1,
+    "nivel": "fuerte"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{EDO de Bernoulli: }y'+P(x)y=Q(x)y^n",
+    "opts": ["\\text{Es siempre lineal}","\\text{Se linealiza con }v=y^{1-n}","\\text{Solo sep. variables}","\\text{Factor integrante directo}"],
+    "ans": 1,
+    "nivel": "fuerte"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Transformada de Laplace: }\\mathcal{L}\\{e^{at}\\}=",
+    "opts": ["\\frac{1}{s}","\\frac{1}{s-a}","\\frac{a}{s^2}","\\frac{s}{s^2+a^2}"],
+    "ans": 1,
+    "nivel": "legendaria"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\mathcal{L}\\{\\sin(at)\\}=",
+    "opts": ["\\frac{s}{s^2+a^2}","\\frac{a}{s^2-a^2}","\\frac{a}{s^2+a^2}","\\frac{1}{s^2+a^2}"],
+    "ans": 2,
+    "nivel": "legendaria"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Wronskiano }W(y_1,y_2)\\neq0\\text{ implica:}",
+    "opts": ["\\text{Sols. son iguales}","\\text{Sols. son l.i.}","\\text{Sols. son l.d.}","\\text{No hay solucion}"],
+    "ans": 1,
+    "nivel": "legendaria"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Metodo de var. de parametros resuelve:}",
+    "opts": ["y''+P(x)y=0","y''+P(x)y'+Q(x)y=f(x)","\\text{Solo EDOs sep.}","\\text{Solo EDOs de Bernoulli}"],
+    "ans": 1,
+    "nivel": "legendaria"
+  },
+  {
+    "t": "EDOs",
+    "q": "\\text{Si }r=a\\pm bi,\\text{ la sol. general es:}",
+    "opts": ["e^{ax}(C_1\\cos(bx)+C_2\\sin(bx))","C_1e^{ax}+C_2e^{bx}","(C_1+C_2 x)e^{ax}","C_1\\cos(ax)+C_2\\sin(bx)"],
+    "ans": 0,
+    "nivel": "legendaria"
+  }
+]

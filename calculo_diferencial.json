@@ -1,0 +1,114 @@
+[
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d}{dx}(x^3+2x)=",
+    "opts": ["3x^2+2","3x^2+2x","x^2+2","3x+2"],
+    "ans": 0,
+    "nivel": "normal"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\lim_{x\\to0}\\frac{\\sin x}{x}=",
+    "opts": ["0","\\infty","1","\\text{No existe}"],
+    "ans": 2,
+    "nivel": "normal"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d}{dx}e^x=",
+    "opts": ["xe^{x-1}","e^x","e","1"],
+    "ans": 1,
+    "nivel": "normal"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d}{dx}\\ln x=",
+    "opts": ["\\frac{1}{x}","\\frac{\\ln x}{x}","x","\\frac{1}{x^2}"],
+    "ans": 0,
+    "nivel": "normal"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d}{dx}\\tan x=",
+    "opts": ["\\sec^2 x","\\cos^2 x","-\\sec^2 x","\\cot x"],
+    "ans": 0,
+    "nivel": "normal"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d}{dx}\\sin x=",
+    "opts": ["\\cos x","-\\cos x","\\sin x","-\\sin x"],
+    "ans": 0,
+    "nivel": "normal"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d}{dx}\\cos x=",
+    "opts": ["\\sin x","-\\sin x","\\cos x","-\\cos x"],
+    "ans": 1,
+    "nivel": "normal"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d}{dx}(x\\sin x)=",
+    "opts": ["\\cos x","\\sin x+x\\cos x","x\\cos x","\\sin x-x\\cos x"],
+    "ans": 1,
+    "nivel": "fuerte"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d}{dx}f(g(x))=",
+    "opts": ["f'(x)g'(x)","f(g'(x))","f'(g(x))\\cdot g'(x)","f'(g(x))+g'(x)"],
+    "ans": 2,
+    "nivel": "fuerte"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d}{dx}(x^2 e^x)=",
+    "opts": ["2xe^x","x^2e^x","(2x+x^2)e^x","2x+e^x"],
+    "ans": 2,
+    "nivel": "fuerte"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d^2}{dx^2}x^4=",
+    "opts": ["4x^3","12x^2","24x","6x^2"],
+    "ans": 1,
+    "nivel": "fuerte"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d}{dx}\\arctan x=",
+    "opts": ["\\frac{1}{1+x^2}","\\frac{1}{\\sqrt{1-x^2}}","\\frac{-1}{1+x^2}","\\frac{1}{x^2-1}"],
+    "ans": 0,
+    "nivel": "fuerte"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\text{Si }f(x)=x^x,\\text{ entonces }f'(x)=",
+    "opts": ["x^x","x^x\\ln x","x^x(1+\\ln x)","x\\cdot x^{x-1}"],
+    "ans": 2,
+    "nivel": "legendaria"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\lim_{x\\to\\infty}\\left(1+\\frac{1}{x}\\right)^x=",
+    "opts": ["1","\\infty","e","0"],
+    "ans": 2,
+    "nivel": "legendaria"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\text{Regla de L'Hopital se aplica cuando:}",
+    "opts": ["f/g\\to 0/0","f/g\\to\\infty/\\infty","\\text{Ambas anteriores}","f/g\\to 1/1"],
+    "ans": 2,
+    "nivel": "legendaria"
+  },
+  {
+    "t": "Calculo Diferencial",
+    "q": "\\frac{d}{dx}\\left(\\frac{f}{g}\\right)=",
+    "opts": ["\\frac{f'g-fg'}{g^2}","\\frac{f'g+fg'}{g^2}","\\frac{f'}{g'}","f'g-fg'"],
+    "ans": 0,
+    "nivel": "legendaria"
+  }
+]

@@ -710,7 +710,9 @@ async function createRoom(){
     }
   });
   statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
-    if(snap.val()==="coin") initGame();
+    const v=snap.val();
+    if(v==="topic_anim") showTopicAnimFromFirebase();
+    if(v==="coin") initGame();
   });
 }
 
@@ -734,7 +736,9 @@ async function joinRoom(){
     "Tu tematica: "+TOPIC_NAMES[myTopic]+" | Rival: "+TOPIC_NAMES[d.hostTopic||"calculo_diferencial"];
   ss("s-guest");
   statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
-    if(snap.val()==="coin") initGame();
+    const v=snap.val();
+    if(v==="topic_anim") showTopicAnimFromFirebase();
+    if(v==="coin") initGame();
   });
 }
 
@@ -743,12 +747,19 @@ async function hostStart(){
   const d=snap.val();
   const hostTopic=d.hostTopic||"calculo_diferencial";
   const guestTopic=d.guestTopic||"calculo_diferencial";
-
   let finalTopic=hostTopic;
+
   if(hostTopic!==guestTopic){
-    // Tematicas distintas — moneda decide
+    // Tematicas distintas — escribir en Firebase para que ambos vean la animacion
     finalTopic=Math.random()<0.5?hostTopic:guestTopic;
-    await showTopicCoinModal(d.host,d.guest,hostTopic,guestTopic,finalTopic);
+    await update(roomRef,{
+      status:"topic_anim",
+      topicAnim:{
+        hostTopic,guestTopic,finalTopic,ts:Date.now()
+      }
+    });
+    // Esperar a que termine la animacion (4.6s) antes de continuar
+    await new Promise(r=>setTimeout(r,4800));
   }
 
   // Cargar preguntas de la tematica ganadora
@@ -759,6 +770,7 @@ async function hostStart(){
   await update(roomRef,{
     status:"coin",
     topic:finalTopic,
+    topicAnim:null,
     rematch:[false,false],
     game:{
       hp:[MAX_HP,MAX_HP],
@@ -778,30 +790,36 @@ async function hostStart(){
   });
 }
 
+async function showTopicAnimFromFirebase(){
+  // Evitar ejecutar múltiples veces
+  if(document.getElementById("modal-topic").classList.contains("open")) return;
+  const snap=await get(roomRef);
+  const d=snap.val();
+  if(!d||!d.topicAnim) return;
+  const {hostTopic,guestTopic,finalTopic}=d.topicAnim;
+  showTopicCoinModal(d.host,d.guest,hostTopic,guestTopic,finalTopic);
+}
+
 function showTopicCoinModal(hostName,guestName,hostTopic,guestTopic,winner){
-  return new Promise(resolve=>{
-    openModal("modal-topic");
-    document.getElementById("topic-title").textContent="Tematicas distintas — Lanzando moneda";
-    document.getElementById("topic-sub").textContent="La moneda decide la tematica del combate";
-    document.getElementById("tv-n1").textContent=hostName;
-    document.getElementById("tv-t1").textContent=TOPIC_NAMES[hostTopic];
-    document.getElementById("tv-n2").textContent=guestName;
-    document.getElementById("tv-t2").textContent=TOPIC_NAMES[guestTopic];
-    document.getElementById("topic-result").textContent="";
-    const coinEl=document.getElementById("topic-coin-el");
-    coinEl.classList.remove("spin");
-    void coinEl.offsetWidth;
-    coinEl.classList.add("spin");
-    setTimeout(()=>{
-      const winnerName=winner===hostTopic?hostName:guestName;
-      document.getElementById("topic-result").textContent=
-        "Tematica elegida: "+TOPIC_NAMES[winner]+" ("+winnerName+")";
-      setTimeout(()=>{
-        closeModal("modal-topic");
-        resolve();
-      },2500);
-    },2100);
-  });
+  openModal("modal-topic");
+  document.getElementById("topic-title").textContent="Tematicas distintas — Lanzando moneda";
+  document.getElementById("topic-sub").textContent="La moneda decide la tematica del combate";
+  document.getElementById("tv-n1").textContent=hostName;
+  document.getElementById("tv-t1").textContent=TOPIC_NAMES[hostTopic]||hostTopic;
+  document.getElementById("tv-n2").textContent=guestName;
+  document.getElementById("tv-t2").textContent=TOPIC_NAMES[guestTopic]||guestTopic;
+  document.getElementById("topic-result").textContent="";
+  const coinEl=document.getElementById("topic-coin-el");
+  coinEl.classList.remove("spin");
+  void coinEl.offsetWidth;
+  coinEl.classList.add("spin");
+  setTimeout(()=>{
+    const winnerName=winner===hostTopic?hostName:guestName;
+    document.getElementById("topic-result").textContent=
+      "Tematica elegida: "+(TOPIC_NAMES[winner]||winner)+" ("+winnerName+")";
+    // El modal se cierra automaticamente cuando el host actualiza status a "coin"
+    // No necesitamos hacer nada más aquí
+  },2100);
 }
 
 // En initGame, cargar las preguntas de la tematica guardada en Firebase
@@ -812,6 +830,7 @@ function showTopicCoinModal(hostName,guestName,hostTopic,guestTopic,winner){
 // =====================================================================
 async function initGame(){
   if(gameUnsub)gameUnsub();
+  closeModal("modal-topic");
   const snap=await get(ref(db,"rooms/"+roomCode));
   const d=snap.val();if(!d)return;
   cNames.host=d.host;cNames.guest=d.guest;

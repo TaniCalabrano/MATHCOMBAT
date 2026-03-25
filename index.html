@@ -864,10 +864,10 @@ function showTopicCoinModal(hostName,guestName,hostTopic,guestTopic,winner){
 // =====================================================================
 // INIT GAME
 // =====================================================================
+let initGameRunning=false;
 async function initGame(){
-  // Evitar llamadas multiples (el listener puede disparar varias veces)
-  if(document.querySelector(".screen.active")?.id==="s-deal"||
-     document.querySelector(".screen.active")?.id==="s-game") return;
+  if(initGameRunning) return;
+  initGameRunning=true;
   if(gameUnsub)gameUnsub();
   closeModal("modal-topic");
 
@@ -912,6 +912,7 @@ async function initGame(){
 
   // Ir al juego
   ss("s-game");
+  initGameRunning=false; // resetear flag al llegar al juego
 
   gameUnsub=onValue(ref(db,"rooms/"+roomCode+"/game"),snap=>{
     const g=snap.val();if(!g)return;
@@ -1727,42 +1728,28 @@ function showResult(g){
 
   if(!roomRef) return;
 
-  // AMBOS jugadores escuchan status desde aqui
-  // Cuando el host escriba "coin" ambos inician el juego
-  const statusUnsubResult=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
-    if(snap.val()==="coin"){
-      statusUnsubResult();
-      initGame();
-    }
-  });
-
-  // Escuchar campo rematch para mostrar UI
-  const rematchRef=ref(db,"rooms/"+roomCode+"/rematch");
-  const rematchUnsub=onValue(rematchRef,snap=>{
+  // Escuchar rematch para UI de botones
+  const rematchUnsub=onValue(ref(db,"rooms/"+roomCode+"/rematch"),snap=>{
     let r=snap.val();
     if(!r) return;
     if(!Array.isArray(r)) r=Object.values(r);
-
     const myIdx=myRole==="host"?0:1;
     const oppIdx=1-myIdx;
 
-    // Ambos aceptaron — solo el host ejecuta doRematch
     if(r[0]===true && r[1]===true){
       rematchUnsub();
+      document.getElementById("rematch-status").textContent="Iniciando revancha...";
+      document.getElementById("btn-rematch").disabled=true;
+      // Solo el host genera la nueva partida
       if(myRole==="host") doRematch();
-      else document.getElementById("rematch-status").textContent="Iniciando revancha...";
       return;
     }
-
-    // El oponente propuso, yo no
     if(r[oppIdx]===true && !r[myIdx]){
       const oppName=myRole==="host"?cNames.guest:cNames.host;
       document.getElementById("rematch-status").textContent=oppName+" quiere revancha!";
       document.getElementById("btn-rematch").textContent="✅ Aceptar revancha";
       document.getElementById("btn-rematch").disabled=false;
     }
-
-    // Yo propuse, esperando
     if(r[myIdx]===true && !r[oppIdx]){
       document.getElementById("rematch-status").textContent="Esperando respuesta del oponente...";
       document.getElementById("btn-rematch").textContent="⏳ Esperando...";
@@ -1772,8 +1759,7 @@ function showResult(g){
 }
 
 async function doRematch(){
-  // Solo el host ejecuta esto
-  QS=[]; // limpiar para recargar
+  QS=[];
   const snap=await get(roomRef);
   const d=snap.val();
   const topic=d.topic||"calculo_diferencial";
@@ -1783,6 +1769,8 @@ async function doRematch(){
     return;
   }
   const h1=makeHand(QS),h2=makeHand(QS),hd=makeHiddenDeck(QS);
+  // Escribir el nuevo juego en Firebase — el statusUnsub global del guest
+  // detectara status:"coin" y llamara initGame() automaticamente
   await update(roomRef,{
     status:"coin",
     rematch:[false,false],
@@ -1802,7 +1790,7 @@ async function doRematch(){
       ts:Date.now()
     }
   });
-  // El host tambien inicia su propio juego
+  // El host inicia su propio juego directamente
   initGame();
 }
 
@@ -1821,6 +1809,7 @@ async function requestRematch(){
 // =====================================================================
 function leaveRoom(){
   clearInterval(timerInt);
+  initGameRunning=false;
   if(gameUnsub){gameUnsub();gameUnsub=null;}
   if(statusUnsub){statusUnsub();statusUnsub=null;}
   if(guestUnsub){guestUnsub();guestUnsub=null;}
@@ -1834,7 +1823,7 @@ function leaveRoom(){
   goHome();
 }
 function goHome(){
-  clearInterval(timerInt);answered=false;selectedCardId=null;
+  clearInterval(timerInt);answered=false;selectedCardId=null;initGameRunning=false;
   sl("");document.getElementById("h-code").value="";
   closeModal("modal-coin");closeModal("modal-roulette");closeModal("modal-special");closeModal("modal-thief");closeModal("modal-topic");
   ss("s-home");

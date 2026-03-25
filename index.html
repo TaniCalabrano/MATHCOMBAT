@@ -439,6 +439,49 @@ function sl(m){document.getElementById("h-log").textContent=m;}
 function genCode(){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<4;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
 function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
 
+// Firebase serializa arrays como objetos {"0":[...],"1":[...]}
+// Esta funcion los convierte de vuelta a arrays reales
+function normalizeGame(g){
+  if(!g) return g;
+  // Normalizar hands
+  if(g.hands && !Array.isArray(g.hands)){
+    g.hands = Object.keys(g.hands).sort().map(k=>{
+      const hand = g.hands[k];
+      if(!Array.isArray(hand) && typeof hand==="object"){
+        return Object.keys(hand).sort().map(i=>hand[i]);
+      }
+      return hand;
+    });
+  }
+  // Normalizar cada mano individualmente
+  if(g.hands && Array.isArray(g.hands)){
+    g.hands = g.hands.map(hand=>{
+      if(!hand) return [];
+      if(!Array.isArray(hand) && typeof hand==="object"){
+        return Object.keys(hand).sort().map(i=>hand[i]);
+      }
+      return hand;
+    });
+  }
+  // Normalizar hp
+  if(g.hp && !Array.isArray(g.hp)){
+    g.hp = Object.keys(g.hp).sort().map(k=>g.hp[k]);
+  }
+  // Normalizar shields
+  if(g.shields && !Array.isArray(g.shields)){
+    g.shields = Object.keys(g.shields).sort().map(k=>g.shields[k]);
+  }
+  // Normalizar scores
+  if(g.scores && !Array.isArray(g.scores)){
+    g.scores = Object.keys(g.scores).sort().map(k=>g.scores[k]);
+  }
+  // Normalizar hiddenDeck
+  if(g.hiddenDeck && !Array.isArray(g.hiddenDeck)){
+    g.hiddenDeck = Object.keys(g.hiddenDeck).sort().map(k=>g.hiddenDeck[k]);
+  }
+  return g;
+}
+
 function renderHP(idx,hp){
   const pct=Math.max(0,(hp/MAX_HP)*100);
   const b=document.getElementById("hp-p"+(idx+1));
@@ -573,6 +616,8 @@ async function initGame(){
 // SINCRONIZAR ESTADO
 // =====================================================================
 function syncGameState(g){
+  g = normalizeGame(g);
+  if(!g.hands||!g.hands[0]||!g.hands[1]) return;
   renderHP(0,g.hp[0]);renderHP(1,g.hp[1]);
   setShield(0,g.shields[0]);setShield(1,g.shields[1]);
 
@@ -704,7 +749,8 @@ function renderMyHand(hand, phase, isMyTurn){
 async function selectCard(card){
   if(!card||card.used)return;
   const snap=await get(ref(db,"rooms/"+roomCode+"/game"));
-  const g=snap.val();if(!g)return;
+  let g=snap.val();if(!g)return;
+  g=normalizeGame(g);
   const myIdx=myRole==="host"?0:1;
 
   // Marcar carta como usada
@@ -737,6 +783,7 @@ async function selectCard(card){
 // EFECTOS ESPECIALES
 // =====================================================================
 async function applySpecialEffect(g,myIdx,oppIdx){
+  g=normalizeGame(g);
   const card=g.attackCard;
   if(!card)return;
   const by=g.specialBy;
@@ -921,11 +968,18 @@ function showRouletteModal(g,myIdx,oppIdx){
 }
 
 async function applyDamage(g,defenderIdx,attackerIdx,baseDmg,mode){
-  const newHP=[...g.hp];
-  const shields=[...g.shields];
+  // Leer estado fresco de Firebase y normalizar
+  const snap=await get(ref(db,"rooms/"+roomCode+"/game"));
+  const gFresh=normalizeGame(snap.val());
+  g=normalizeGame(g);
+  const newHP=[...(gFresh?gFresh.hp:g.hp)];
+  const shields=[...(gFresh?gFresh.shields:g.shields)];
+  let newHands=JSON.parse(JSON.stringify(gFresh?gFresh.hands:g.hands));
+  let newHiddenIdx=gFresh?gFresh.hiddenIdx:0;
+  const hiddenDeck=gFresh?(Array.isArray(gFresh.hiddenDeck)?gFresh.hiddenDeck:Object.values(gFresh.hiddenDeck||{})):[];
   let desc="";
   if(mode==="full"){
-    if(shields[defenderIdx]){shields[defenderIdx]=false;desc="Escudo bloqueado el ataque!";}
+    if(shields[defenderIdx]){shields[defenderIdx]=false;desc="Escudo bloqueo el ataque!";}
     else{newHP[defenderIdx]=Math.max(0,newHP[defenderIdx]-baseDmg);animF(defenderIdx,"hit");popDmg(defenderIdx,"-"+baseDmg,"#f87171");desc="Recibes "+baseDmg+" HP de daño!";}
   } else if(mode==="none"){
     desc="Sin daño — respuesta correcta!";
@@ -938,26 +992,16 @@ async function applyDamage(g,defenderIdx,attackerIdx,baseDmg,mode){
     else{newHP[attackerIdx]=Math.max(0,newHP[attackerIdx]-baseDmg);animF(attackerIdx,"hit");popDmg(attackerIdx,"-"+baseDmg,"#f87171");desc="El daño rebota! "+baseDmg+" HP al atacante!";}
   }
   document.getElementById("status-msg").textContent=desc;
-
   const newTurn=g.turn===0?1:0;
   const finished=newHP[0]<=0||newHP[1]<=0;
-
-  // Verificar cartas disponibles
-  const snap=await get(ref(db,"rooms/"+roomCode+"/game"));
-  const gFresh=snap.val();
-  let newHands=gFresh?JSON.parse(JSON.stringify(gFresh.hands)):g.hands;
-  let newHiddenIdx=gFresh?gFresh.hiddenIdx:0;
-  const hiddenDeck=gFresh?gFresh.hiddenDeck:[];
-
   // Si el siguiente jugador no tiene cartas, robar de baraja oculta
-  if(!newHands[newTurn].some(c=>!c.used) && !finished){
+  if(!finished && newHands[newTurn] && !newHands[newTurn].some(c=>!c.used)){
     if(hiddenDeck && newHiddenIdx<hiddenDeck.length){
       const newCard={...hiddenDeck[newHiddenIdx],id:"hd"+newHiddenIdx,used:false};
       newHands[newTurn].push(newCard);
       newHiddenIdx++;
     }
   }
-
   await update(ref(db,"rooms/"+roomCode+"/game"),{
     hp:newHP,shields,hands:newHands,hiddenIdx:newHiddenIdx,
     phase:finished?"finished":"select",
@@ -981,6 +1025,7 @@ function updateTimerBar(total){
 // RESULTADO
 // =====================================================================
 function showResult(g){
+  g=normalizeGame(g);
   clearInterval(timerInt);
   if(gameUnsub){gameUnsub();gameUnsub=null;}
   ss("s-result");

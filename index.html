@@ -4,68 +4,109 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Math Combat</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: system-ui, sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; }
-.screen { display: none; max-width: 680px; margin: auto; padding: 2rem 1rem; }
+body { font-family: system-ui, sans-serif; background: #0f0f1a; color: #e8e8f0; min-height: 100vh; }
+.screen { display: none; max-width: 720px; margin: auto; padding: 2rem 1rem; }
 .screen.active { display: block; }
-h1 { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
-.sub { font-size: 14px; color: #666; margin-bottom: 2rem; }
-.card { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
-label { font-size: 13px; color: #555; display: block; margin-bottom: 4px; margin-top: 12px; }
-input, select { width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; outline: none; }
-input:focus, select:focus { border-color: #4A80D4; }
-.btn { display: block; width: 100%; padding: 12px; font-size: 15px; font-weight: 500; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; cursor: pointer; margin-top: 1rem; transition: background 0.15s; }
-.btn:hover { background: #f5f5f0; }
-.btn-primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-.btn-primary:hover { background: #333; }
-.btn-danger { color: #c0392b; border-color: #e0b0ae; }
-.room-code { font-size: 36px; font-weight: 700; letter-spacing: 8px; text-align: center; padding: 1rem; background: #f5f5f0; border-radius: 8px; margin: 1rem 0; }
-.scores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
-.score-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem; }
-.score-card.active { border: 2px solid #4A80D4; }
-.score-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
-.score-name { font-size: 15px; font-weight: 500; margin: 2px 0; }
-.score-pts { font-size: 26px; font-weight: 600; }
-.timer-wrap { background: #eee; border-radius: 99px; height: 6px; margin-bottom: 1.25rem; overflow: hidden; }
-.timer-bar { height: 100%; border-radius: 99px; transition: width 1s linear, background 0.5s; background: #4A80D4; }
-.turn-box { text-align: center; font-size: 13px; color: #666; margin-bottom: 0.75rem; }
-.turn-box span { font-weight: 600; color: #1a1a1a; }
-.progress { font-size: 12px; color: #888; text-align: center; margin-bottom: 0.75rem; }
-.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; font-weight: 500; }
-.badge-calc { background: #E6F0FB; color: #1a4a8a; }
-.badge-ode  { background: #EDE9FD; color: #4a2a8a; }
-.q-text { font-size: 16px; line-height: 1.6; margin-bottom: 1.25rem; }
-.options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.opt-btn { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 0.75rem 1rem; font-size: 14px; color: #1a1a1a; cursor: pointer; text-align: left; transition: background 0.15s; }
-.opt-btn:hover:not(:disabled) { background: #f5f5f0; }
-.opt-btn.correct { background: #eafaee; border-color: #2ecc71; color: #1a6e36; }
-.opt-btn.wrong   { background: #faeaea; border-color: #e74c3c; color: #7a1a1a; }
-.opt-btn:disabled { cursor: default; opacity: 0.7; }
-.status { font-size: 13px; text-align: center; margin: 0.75rem 0; min-height: 20px; color: #888; }
-.status.correct { color: #1a6e36; font-weight: 500; }
-.status.wrong   { color: #c0392b; font-weight: 500; }
-.waiting-msg { text-align: center; padding: 2rem 1rem; }
-.waiting-msg .big { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-.waiting-msg .small { font-size: 13px; color: #666; }
+
+/* HOME */
+.home-title { font-size: 36px; font-weight: 700; text-align: center; margin-bottom: 4px; color: #fff; letter-spacing: 2px; }
+.home-title span { color: #7c6af7; }
+.home-sub { font-size: 14px; color: #888; text-align: center; margin-bottom: 2rem; }
+.card { background: #1a1a2e; border: 1px solid #2a2a45; border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; }
+label { font-size: 12px; color: #888; display: block; margin-bottom: 4px; margin-top: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+input, select { width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #2a2a45; border-radius: 8px; background: #0f0f1a; color: #e8e8f0; outline: none; }
+input:focus, select:focus { border-color: #7c6af7; }
+.btn { display: block; width: 100%; padding: 12px; font-size: 15px; font-weight: 600; border: 1px solid #2a2a45; border-radius: 8px; background: #1a1a2e; color: #e8e8f0; cursor: pointer; margin-top: 1rem; transition: all 0.15s; letter-spacing: 0.5px; }
+.btn:hover { background: #2a2a45; }
+.btn-primary { background: #7c6af7; color: #fff; border-color: #7c6af7; }
+.btn-primary:hover { background: #6a58e0; }
+.btn-danger { color: #e74c3c; border-color: #4a2020; }
+.divider { text-align: center; font-size: 12px; color: #444; margin: 1rem 0; }
+.log  { font-size: 12px; color: #e74c3c; text-align: center; margin-top: 0.5rem; min-height: 16px; }
+.info { font-size: 12px; color: #7c6af7; text-align: center; margin-top: 0.5rem; }
+.room-code { font-size: 40px; font-weight: 700; letter-spacing: 10px; text-align: center; padding: 1rem; background: #0f0f1a; border-radius: 8px; margin: 1rem 0; color: #7c6af7; }
+.waiting-msg { text-align: center; padding: 1.5rem 1rem; }
+.waiting-msg .big { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.waiting-msg .small { font-size: 13px; color: #888; }
 .dot-anim::after { content: '.'; animation: dots 1.5s infinite; }
 @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
-.result-winner { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 4px; }
-.result-sub { font-size: 14px; color: #666; text-align: center; margin-bottom: 1.5rem; }
+
+/* ARENA DE COMBATE */
+.arena { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1rem; }
+.fighter { background: #1a1a2e; border: 1px solid #2a2a45; border-radius: 14px; padding: 1rem; text-align: center; position: relative; transition: border-color 0.3s; }
+.fighter.active-turn { border-color: #7c6af7; box-shadow: 0 0 16px rgba(124,106,247,0.3); }
+.fighter.taking-hit { animation: hitFlash 0.4s ease; }
+.fighter.attacking { animation: attackBob 0.4s ease; }
+@keyframes hitFlash { 0%{background:#1a1a2e} 30%{background:#3a1a1a} 100%{background:#1a1a2e} }
+@keyframes attackBob { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
+.fighter-name { font-size: 13px; font-weight: 600; color: #e8e8f0; margin-bottom: 6px; }
+.fighter-role { font-size: 10px; color: #666; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.avatar-wrap { width: 80px; height: 80px; margin: 0 auto 10px; }
+.hp-bar-wrap { background: #0f0f1a; border-radius: 99px; height: 8px; margin-bottom: 4px; overflow: hidden; border: 1px solid #2a2a45; }
+.hp-bar { height: 100%; border-radius: 99px; transition: width 0.6s ease, background 0.3s; }
+.hp-text { font-size: 11px; color: #888; }
+.dmg-popup { position: absolute; top: 10px; right: 10px; font-size: 18px; font-weight: 700; opacity: 0; pointer-events: none; }
+.dmg-popup.show-dmg { animation: popDmg 1s ease forwards; }
+.dmg-popup.show-heal { animation: popHeal 1s ease forwards; color: #2ecc71; }
+@keyframes popDmg { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-30px)} }
+@keyframes popHeal { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-30px)} }
+
+/* TIMER */
+.timer-wrap { background: #1a1a2e; border-radius: 99px; height: 6px; margin-bottom: 1rem; overflow: hidden; border: 1px solid #2a2a45; }
+.timer-bar { height: 100%; border-radius: 99px; transition: width 1s linear, background 0.5s; background: #7c6af7; }
+
+/* PREGUNTA */
+.turn-box { text-align: center; font-size: 13px; color: #888; margin-bottom: 0.5rem; }
+.turn-box span { font-weight: 700; color: #7c6af7; }
+.progress { font-size: 11px; color: #555; text-align: center; margin-bottom: 0.75rem; }
+.question-card { background: #1a1a2e; border: 1px solid #2a2a45; border-radius: 14px; padding: 1.5rem; margin-bottom: 0.75rem; }
+.badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 6px; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.badge-calc { background: #1a2a45; color: #7cb4f7; }
+.badge-ode  { background: #2a1a45; color: #c47cf7; }
+.q-text { font-size: 15px; line-height: 1.7; margin-bottom: 1.25rem; color: #e8e8f0; }
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opt-btn { background: #0f0f1a; border: 1px solid #2a2a45; border-radius: 8px; padding: 0.75rem 1rem; font-size: 14px; color: #e8e8f0; cursor: pointer; text-align: left; transition: all 0.15s; }
+.opt-btn:hover:not(:disabled) { background: #2a2a45; border-color: #7c6af7; }
+.opt-btn.correct { background: #0f2a1a; border-color: #2ecc71; color: #2ecc71; }
+.opt-btn.wrong   { background: #2a0f0f; border-color: #e74c3c; color: #e74c3c; }
+.opt-btn:disabled { cursor: default; opacity: 0.7; }
+.status { font-size: 13px; text-align: center; margin: 0.5rem 0; min-height: 20px; color: #888; }
+.status.correct { color: #2ecc71; font-weight: 600; }
+.status.wrong   { color: #e74c3c; font-weight: 600; }
+
+/* RESULTADO */
+.result-winner { font-size: 28px; font-weight: 700; text-align: center; margin-bottom: 4px; color: #7c6af7; }
+.result-sub { font-size: 14px; color: #888; text-align: center; margin-bottom: 1.5rem; }
 .result-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
-.log  { font-size: 12px; color: #e74c3c; text-align: center; margin-top: 0.5rem; min-height: 16px; }
-.info { font-size: 12px; color: #4A80D4; text-align: center; margin-top: 0.5rem; }
-.divider { text-align: center; font-size: 12px; color: #bbb; margin: 1rem 0; }
+.result-card { background: #0f0f1a; border: 1px solid #2a2a45; border-radius: 10px; padding: 1rem; text-align: center; }
+.result-card .rname { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.result-card .rpts { font-size: 22px; font-weight: 700; color: #7c6af7; }
+
+/* KaTeX fix para tema oscuro */
+.katex { color: #e8e8f0 !important; }
 </style>
 </head>
 <body>
 
+<!-- HOME -->
 <div class="screen active" id="screen-home">
-  <h1>Math Combat</h1>
-  <p class="sub">Duelo matematico multijugador — Calculo y EDOs</p>
+  <div style="padding-top:1rem;">
+    <div class="home-title">MATH <span>COMBAT</span></div>
+    <div class="home-sub">Duelo matematico multijugador — Calculo y EDOs</div>
+  </div>
   <div class="card">
     <label>Tu nombre</label>
     <input type="text" id="home-name" placeholder="Escribe tu nombre" maxlength="20" />
+    <label>Tu avatar</label>
+    <select id="home-avatar">
+      <option value="warrior">Guerrero</option>
+      <option value="robot">Robot</option>
+      <option value="scientist">Cientifico</option>
+    </select>
     <div class="divider">— Que quieres hacer? —</div>
     <button class="btn btn-primary" id="btn-create">Crear sala nueva</button>
     <div style="margin-top:1rem;">
@@ -77,12 +118,12 @@ input:focus, select:focus { border-color: #4A80D4; }
   <div class="log" id="home-log"></div>
 </div>
 
+<!-- LOBBY HOST -->
 <div class="screen" id="screen-lobby">
-  <h1>Sala creada</h1>
-  <p class="sub">Comparte este codigo con tu oponente</p>
+  <div class="home-title" style="font-size:24px;margin-bottom:4px;">Sala creada</div>
+  <div class="home-sub">Comparte este codigo con tu oponente</div>
   <div class="card">
     <div class="room-code" id="lobby-code">----</div>
-    <p style="font-size:13px;color:#666;text-align:center;margin-bottom:1rem;">El otro jugador ingresa este codigo en su dispositivo</p>
     <label>Preguntas por partida</label>
     <select id="lobby-numq">
       <option value="6">6 preguntas</option>
@@ -99,40 +140,50 @@ input:focus, select:focus { border-color: #4A80D4; }
       <div class="big" id="lobby-status-title">Esperando oponente<span class="dot-anim"></span></div>
       <div class="small" id="lobby-status-sub">Nadie conectado aun</div>
     </div>
-    <button class="btn btn-primary" id="btn-start" style="display:none;">Iniciar partida</button>
+    <button class="btn btn-primary" id="btn-start" style="display:none;">Iniciar combate</button>
     <button class="btn btn-danger" id="btn-cancel">Cancelar</button>
   </div>
 </div>
 
+<!-- LOBBY GUEST -->
 <div class="screen" id="screen-guest-lobby">
-  <h1>Sala encontrada</h1>
   <div class="card">
     <div class="waiting-msg">
-      <div class="big">Conectado</div>
-      <div class="small">Esperando que el anfitrion inicie la partida<span class="dot-anim"></span></div>
+      <div class="big">Conectado al combate</div>
+      <div class="small">Esperando que el anfitrion inicie<span class="dot-anim"></span></div>
     </div>
     <div class="info" id="guest-lobby-info"></div>
     <button class="btn btn-danger" id="btn-leave-guest">Salir</button>
   </div>
 </div>
 
+<!-- JUEGO -->
 <div class="screen" id="screen-game">
-  <div class="scores">
-    <div class="score-card" id="sc-p1">
-      <div class="score-label">Anfitrion</div>
-      <div class="score-name" id="gname-p1">—</div>
-      <div class="score-pts" id="gpts-p1">0</div>
+  <!-- Arena de combate -->
+  <div class="arena">
+    <div class="fighter" id="fighter-p1">
+      <div class="fighter-name" id="fname-p1">—</div>
+      <div class="fighter-role" id="frole-p1">—</div>
+      <div class="avatar-wrap" id="avatar-p1"></div>
+      <div class="hp-bar-wrap"><div class="hp-bar" id="hp-bar-p1" style="width:100%;background:#2ecc71;"></div></div>
+      <div class="hp-text" id="hp-text-p1">50 / 50</div>
+      <div class="dmg-popup" id="dmg-p1">-10</div>
     </div>
-    <div class="score-card" id="sc-p2">
-      <div class="score-label">Invitado</div>
-      <div class="score-name" id="gname-p2">—</div>
-      <div class="score-pts" id="gpts-p2">0</div>
+    <div class="fighter" id="fighter-p2">
+      <div class="fighter-name" id="fname-p2">—</div>
+      <div class="fighter-role" id="frole-p2">—</div>
+      <div class="avatar-wrap" id="avatar-p2"></div>
+      <div class="hp-bar-wrap"><div class="hp-bar" id="hp-bar-p2" style="width:100%;background:#2ecc71;"></div></div>
+      <div class="hp-text" id="hp-text-p2">50 / 50</div>
+      <div class="dmg-popup" id="dmg-p2">-10</div>
     </div>
   </div>
+
   <div class="timer-wrap"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
   <div class="turn-box">Turno de <span id="turn-name">—</span></div>
   <div class="progress" id="progress-txt">Pregunta 1 de 10</div>
-  <div class="card">
+
+  <div class="question-card">
     <div id="q-badge"></div>
     <div class="q-text" id="q-text"></div>
     <div class="options" id="options"></div>
@@ -141,27 +192,33 @@ input:focus, select:focus { border-color: #4A80D4; }
   <div class="info" id="game-info"></div>
 </div>
 
+<!-- RESULTADO -->
 <div class="screen" id="screen-result">
-  <div class="card">
+  <div class="card" style="text-align:center;">
+    <div style="font-size:60px;margin-bottom:0.5rem;" id="res-trophy">🏆</div>
     <div class="result-winner" id="res-winner"></div>
     <div class="result-sub" id="res-sub"></div>
     <div class="result-scores">
-      <div class="score-card">
-        <div class="score-label" id="res-l1"></div>
-        <div class="score-pts" id="res-p1"></div>
+      <div class="result-card">
+        <div class="rname" id="res-l1"></div>
+        <div style="width:60px;margin:8px auto;" id="res-avatar-p1"></div>
+        <div class="rpts" id="res-p1"></div>
+        <div style="font-size:11px;color:#888;margin-top:2px;" id="res-hp1"></div>
       </div>
-      <div class="score-card">
-        <div class="score-label" id="res-l2"></div>
-        <div class="score-pts" id="res-p2"></div>
+      <div class="result-card">
+        <div class="rname" id="res-l2"></div>
+        <div style="width:60px;margin:8px auto;" id="res-avatar-p2"></div>
+        <div class="rpts" id="res-p2"></div>
+        <div style="font-size:11px;color:#888;margin-top:2px;" id="res-hp2"></div>
       </div>
     </div>
-    <button class="btn btn-primary" id="btn-home">Volver al inicio</button>
+    <button class="btn btn-primary" id="btn-home">Nueva partida</button>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, update, onValue, off, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, update, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyBJX7E8Svv_2pqe6Ylo2J6DrsZmuhMo9vg",
@@ -174,33 +231,93 @@ const app = initializeApp({
 });
 const db = getDatabase(app);
 
+// =====================================================================
+// AVATARES SVG
+// =====================================================================
+const AVATARS = {
+  warrior: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="40" cy="22" r="14" fill="#c0392b"/>
+    <rect x="28" y="36" width="24" height="28" rx="4" fill="#c0392b"/>
+    <rect x="20" y="36" width="8" height="20" rx="3" fill="#e74c3c"/>
+    <rect x="52" y="36" width="8" height="20" rx="3" fill="#e74c3c"/>
+    <rect x="30" y="64" width="8" height="12" rx="2" fill="#922b21"/>
+    <rect x="42" y="64" width="8" height="12" rx="2" fill="#922b21"/>
+    <rect x="54" y="20" width="4" height="28" rx="2" fill="#f39c12"/>
+    <rect x="52" y="18" width="8" height="4" rx="1" fill="#f39c12"/>
+    <circle cx="35" cy="20" r="2" fill="#fff"/>
+    <circle cx="45" cy="20" r="2" fill="#fff"/>
+    <path d="M35 27 Q40 31 45 27" stroke="#fff" stroke-width="1.5" fill="none"/>
+  </svg>`,
+  robot: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="26" y="10" width="28" height="24" rx="4" fill="#5d6d7e"/>
+    <rect x="30" y="14" width="8" height="6" rx="2" fill="#3498db"/>
+    <rect x="42" y="14" width="8" height="6" rx="2" fill="#3498db"/>
+    <rect x="32" y="24" width="16" height="4" rx="2" fill="#2ecc71"/>
+    <rect x="22" y="10" width="4" height="4" rx="1" fill="#95a5a6"/>
+    <rect x="54" y="10" width="4" height="4" rx="1" fill="#95a5a6"/>
+    <rect x="26" y="34" width="28" height="26" rx="3" fill="#5d6d7e"/>
+    <rect x="32" y="38" width="6" height="8" rx="1" fill="#e74c3c"/>
+    <rect x="42" y="38" width="6" height="8" rx="1" fill="#3498db"/>
+    <rect x="16" y="34" width="10" height="18" rx="3" fill="#7f8c8d"/>
+    <rect x="54" y="34" width="10" height="18" rx="3" fill="#7f8c8d"/>
+    <rect x="30" y="60" width="8" height="16" rx="2" fill="#4a5568"/>
+    <rect x="42" y="60" width="8" height="16" rx="2" fill="#4a5568"/>
+    <circle cx="40" cy="6" r="3" fill="#95a5a6"/>
+    <line x1="40" y1="9" x2="40" y2="10" stroke="#95a5a6" stroke-width="1.5"/>
+  </svg>`,
+  scientist: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="40" cy="20" r="14" fill="#f0d9b5"/>
+    <rect x="28" y="34" width="24" height="26" rx="3" fill="#fff"/>
+    <rect x="30" y="34" width="20" height="26" rx="3" fill="#ecf0f1"/>
+    <rect x="34" y="40" width="6" height="10" rx="2" fill="#3498db" opacity="0.6"/>
+    <rect x="42" y="43" width="6" height="7" rx="2" fill="#2ecc71" opacity="0.6"/>
+    <rect x="20" y="34" width="8" height="18" rx="3" fill="#bdc3c7"/>
+    <rect x="52" y="34" width="8" height="18" rx="3" fill="#bdc3c7"/>
+    <rect x="30" y="60" width="8" height="14" rx="2" fill="#7f8c8d"/>
+    <rect x="42" y="60" width="8" height="14" rx="2" fill="#7f8c8d"/>
+    <rect x="30" y="8" width="20" height="8" rx="2" fill="#2c3e50"/>
+    <circle cx="34" cy="18" r="3" fill="#fff" opacity="0.8"/>
+    <circle cx="46" cy="18" r="3" fill="#fff" opacity="0.8"/>
+    <path d="M36 26 Q40 29 44 26" stroke="#c0392b" stroke-width="1.5" fill="none"/>
+    <line x1="48" y1="8" x2="52" y2="4" stroke="#2c3e50" stroke-width="2"/>
+    <line x1="52" y1="4" x2="55" y2="7" stroke="#2c3e50" stroke-width="2"/>
+  </svg>`
+};
+
+const AVATAR_NAMES = { warrior:"Guerrero", robot:"Robot", scientist:"Cientifico" };
+
 const QUESTIONS = [
-  { topic:"Calculo", q:"Cual es la derivada de f(x) = x^3 + 2x?", opts:["3x^2 + 2","3x^2 + 2x","x^2 + 2","3x + 2"], ans:0 },
-  { topic:"Calculo", q:"Cuanto vale la integral de 0 a 1 de x^2 dx?", opts:["1/2","1/3","1/4","2/3"], ans:1 },
-  { topic:"Calculo", q:"El limite de sen(x)/x cuando x tiende a 0 es:", opts:["0","infinito","1","No existe"], ans:2 },
-  { topic:"Calculo", q:"La derivada de e^x es:", opts:["x*e^(x-1)","e^x","e","1"], ans:1 },
-  { topic:"Calculo", q:"La derivada de ln(x) es:", opts:["1/x","ln(x)/x","x","1/x^2"], ans:0 },
-  { topic:"Calculo", q:"La integral de cos(x) dx es:", opts:["-sen(x)+C","sen(x)+C","cos(x)+C","-cos(x)+C"], ans:1 },
-  { topic:"Calculo", q:"Si f(x) = x*sen(x), entonces f'(x) es:", opts:["cos(x)","sen(x)+x*cos(x)","x*cos(x)","sen(x)-x*cos(x)"], ans:1 },
-  { topic:"Calculo", q:"La regla de la cadena para f(g(x)) da:", opts:["f'(x)*g'(x)","f(g'(x))","f'(g(x))*g'(x)","f'(g(x))+g'(x)"], ans:2 },
-  { topic:"Calculo", q:"El Teorema Fundamental del Calculo relaciona:", opts:["Derivadas e integrales","Limites y series","Derivadas parciales","Integrales dobles"], ans:0 },
-  { topic:"Calculo", q:"La integral de 1/x dx es:", opts:["x+C","ln|x|+C","1/x^2+C","-1/x^2+C"], ans:1 },
-  { topic:"Calculo", q:"La derivada de tan(x) es:", opts:["sec^2(x)","cos^2(x)","-sec^2(x)","cot(x)"], ans:0 },
-  { topic:"Calculo", q:"Si f(x) = x^2*e^x, entonces f'(x) es:", opts:["2x*e^x","x^2*e^x","(2x+x^2)*e^x","2x+e^x"], ans:2 },
-  { topic:"EDO", q:"La solucion general de y' = y es:", opts:["y=Cx","y=C*e^x","y=C+e^x","y=ln(x)+C"], ans:1 },
-  { topic:"EDO", q:"Que tipo de EDO es y'' + 4y = 0?", opts:["No lineal orden 1","Lineal orden 2 homogenea","Lineal orden 1","Bernoulli"], ans:1 },
-  { topic:"EDO", q:"La solucion de y' + y = 0 con y(0)=2 es:", opts:["y=2*e^(-x)","y=2*e^x","y=e^(-x)+1","y=2x+2"], ans:0 },
-  { topic:"EDO", q:"El factor integrante de y' + P(x)y = Q(x) es:", opts:["e^P(x)","e^(integral P(x))","integral P(x)","1/P(x)"], ans:1 },
-  { topic:"EDO", q:"Las raices del polinomio caracteristico de y'' - y = 0 son:", opts:["r=+-i","r=0 y 1","r=+-1","r=1 doble"], ans:2 },
-  { topic:"EDO", q:"Que metodo resuelve y'=f(x,y) numericamente con pasos discretos?", opts:["Separacion de variables","Metodo de Euler","Factor integrante","Variacion de parametros"], ans:1 },
-  { topic:"EDO", q:"Si y'' + 2y' + y = 0, el polinomio caracteristico es:", opts:["r^2+2r+1=0","r^2-2r+1=0","r^2+2=0","r+1=0"], ans:0 },
-  { topic:"EDO", q:"Una EDO separable tiene la forma:", opts:["y''=f(x,y)","y'=f(x)*g(y)","y'+P(x)y=0","y''+P(x)y=Q(x)"], ans:1 },
+  { topic:"Calculo", q:"\\text{Derivada de } f(x) = x^3 + 2x", opts:["3x^2+2","3x^2+2x","x^2+2","3x+2"], ans:0 },
+  { topic:"Calculo", q:"\\int_0^1 x^2\\,dx =", opts:["\\frac{1}{2}","\\frac{1}{3}","\\frac{1}{4}","\\frac{2}{3}"], ans:1 },
+  { topic:"Calculo", q:"\\lim_{x \\to 0} \\frac{\\sin x}{x} =", opts:["0","\\infty","1","\\text{No existe}"], ans:2 },
+  { topic:"Calculo", q:"\\frac{d}{dx}e^x =", opts:["xe^{x-1}","e^x","e","1"], ans:1 },
+  { topic:"Calculo", q:"\\frac{d}{dx}\\ln(x) =", opts:["\\frac{1}{x}","\\frac{\\ln x}{x}","x","\\frac{1}{x^2}"], ans:0 },
+  { topic:"Calculo", q:"\\int \\cos(x)\\,dx =", opts:["-\\sin x+C","\\sin x+C","\\cos x+C","-\\cos x+C"], ans:1 },
+  { topic:"Calculo", q:"\\text{Si } f(x)=x\\sin x,\\text{ entonces } f'(x)=", opts:["\\cos x","\\sin x+x\\cos x","x\\cos x","\\sin x-x\\cos x"], ans:1 },
+  { topic:"Calculo", q:"\\frac{d}{dx}f(g(x)) =", opts:["f'(x)g'(x)","f(g'(x))","f'(g(x))\\cdot g'(x)","f'(g(x))+g'(x)"], ans:2 },
+  { topic:"Calculo", q:"\\int \\frac{1}{x}\\,dx =", opts:["x+C","\\ln|x|+C","\\frac{1}{x^2}+C","-\\frac{1}{x^2}+C"], ans:1 },
+  { topic:"Calculo", q:"\\frac{d}{dx}\\tan(x) =", opts:["\\sec^2 x","\\cos^2 x","-\\sec^2 x","\\cot x"], ans:0 },
+  { topic:"Calculo", q:"\\frac{d}{dx}(x^2 e^x) =", opts:["2xe^x","x^2e^x","(2x+x^2)e^x","2x+e^x"], ans:2 },
+  { topic:"Calculo", q:"\\int e^x\\,dx =", opts:["e^x+C","xe^x+C","e^{x+1}+C","\\frac{e^x}{x}+C"], ans:0 },
+  { topic:"EDO", q:"\\text{Solucion general de } y' = y", opts:["y=Cx","y=Ce^x","y=C+e^x","y=\\ln x+C"], ans:1 },
+  { topic:"EDO", q:"\\text{Tipo de EDO: } y''+4y=0", opts:["\\text{No lineal ord.1}","\\text{Lineal ord.2 hom.}","\\text{Lineal ord.1}","\\text{Bernoulli}"], ans:1 },
+  { topic:"EDO", q:"y'+y=0,\\; y(0)=2 \\Rightarrow y=", opts:["2e^{-x}","2e^x","e^{-x}+1","2x+2"], ans:0 },
+  { topic:"EDO", q:"\\text{Factor integrante de } y'+P(x)y=Q(x)", opts:["e^{P(x)}","e^{\\int P(x)dx}","\\int P(x)dx","\\frac{1}{P(x)}"], ans:1 },
+  { topic:"EDO", q:"\\text{Raices de } y''-y=0", opts:["r=\\pm i","r=0,1","r=\\pm 1","r=1\\text{ doble}"], ans:2 },
+  { topic:"EDO", q:"\\text{Metodo numerico para } y'=f(x,y)", opts:["\\text{Sep. variables}","\\text{Euler}","\\text{Factor integrante}","\\text{Var. parametros}"], ans:1 },
+  { topic:"EDO", q:"\\text{Polinomio caract. de } y''+2y'+y=0", opts:["r^2+2r+1=0","r^2-2r+1=0","r^2+2=0","r+1=0"], ans:0 },
+  { topic:"EDO", q:"\\text{EDO separable tiene la forma:}", opts:["y''=f(x,y)","y'=f(x)g(y)","y'+P(x)y=0","y''+P(x)y=Q(x)"], ans:1 },
 ];
 
-let myName="", myRole="", roomCode="", roomRef=null;
+const MAX_HP = 50;
+const DMG_CORRECT = 10;
+const DMG_WRONG = 5;
+
+let myName="", myRole="", myAvatar="warrior", roomCode="", roomRef=null;
 let timerInterval=null, timeLeft=30, answered=false;
 let currentConfig={numQ:10,timeLimit:30};
 let currentNames={host:"",guest:""};
+let currentAvatars={host:"warrior",guest:"robot"};
 let lastQIdx=-1, gameUnsub=null, statusUnsub=null, guestUnsub=null;
 
 function showScreen(id){
@@ -210,13 +327,46 @@ function showScreen(id){
 function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
 function genCode(){
   const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let s="";
-  for(let i=0;i<4;i++) s+=c[Math.floor(Math.random()*c.length)];
+  let s="";for(let i=0;i<4;i++) s+=c[Math.floor(Math.random()*c.length)];
   return s;
 }
 function setLog(msg){ document.getElementById("home-log").textContent=msg; }
 
-// ---- Conectar botones via addEventListener (no onclick) ----
+function renderKatex(el, tex){
+  try {
+    katex.render(tex, el, { throwOnError:false, displayMode:false });
+  } catch(e){
+    el.textContent = tex;
+  }
+}
+
+function renderHP(idx, hp){
+  const pct = Math.max(0,(hp/MAX_HP)*100);
+  const bar = document.getElementById("hp-bar-p"+(idx+1));
+  const txt = document.getElementById("hp-text-p"+(idx+1));
+  bar.style.width = pct+"%";
+  bar.style.background = pct>60?"#2ecc71":pct>30?"#f39c12":"#e74c3c";
+  txt.textContent = Math.max(0,hp)+" / "+MAX_HP;
+}
+
+function showDamage(idx, amount, isHeal){
+  const el = document.getElementById("dmg-p"+(idx+1));
+  el.textContent = (isHeal?"+":"-")+Math.abs(amount);
+  el.style.color = isHeal?"#2ecc71":"#e74c3c";
+  el.classList.remove("show-dmg","show-heal");
+  void el.offsetWidth;
+  el.classList.add(isHeal?"show-heal":"show-dmg");
+}
+
+function animateFighter(idx, type){
+  const el = document.getElementById("fighter-p"+(idx+1));
+  el.classList.remove("taking-hit","attacking");
+  void el.offsetWidth;
+  el.classList.add(type);
+  setTimeout(()=>el.classList.remove(type), 500);
+}
+
+// ---- Conectar botones ----
 document.getElementById("btn-create").addEventListener("click", createRoom);
 document.getElementById("btn-join").addEventListener("click", joinRoom);
 document.getElementById("btn-start").addEventListener("click", hostStartGame);
@@ -226,11 +376,18 @@ document.getElementById("btn-home").addEventListener("click", goHome);
 
 async function createRoom(){
   myName=document.getElementById("home-name").value.trim();
+  myAvatar=document.getElementById("home-avatar").value;
   if(!myName){setLog("Escribe tu nombre primero");return;}
   myRole="host";
   roomCode=genCode();
   roomRef=ref(db,"rooms/"+roomCode);
-  await set(roomRef,{host:myName,guest:"",status:"waiting",config:{numQ:10,timeLimit:30},game:null});
+  await set(roomRef,{
+    host:myName, hostAvatar:myAvatar,
+    guest:"", guestAvatar:"",
+    status:"waiting",
+    config:{numQ:10,timeLimit:30},
+    game:null
+  });
   document.getElementById("lobby-code").textContent=roomCode;
   showScreen("screen-lobby");
 
@@ -238,7 +395,7 @@ async function createRoom(){
     const g=snap.val();
     if(g){
       document.getElementById("lobby-status-title").textContent=g+" se unio!";
-      document.getElementById("lobby-status-sub").textContent="Ya puedes iniciar la partida";
+      document.getElementById("lobby-status-sub").textContent="Ya puedes iniciar el combate";
       document.getElementById("btn-start").style.display="block";
     } else {
       document.getElementById("lobby-status-title").innerHTML="Esperando oponente<span class='dot-anim'></span>";
@@ -254,6 +411,7 @@ async function createRoom(){
 
 async function joinRoom(){
   myName=document.getElementById("home-name").value.trim();
+  myAvatar=document.getElementById("home-avatar").value;
   const code=document.getElementById("join-code").value.trim().toUpperCase();
   if(!myName){setLog("Escribe tu nombre primero");return;}
   if(code.length!==4){setLog("El codigo debe tener 4 caracteres");return;}
@@ -265,8 +423,8 @@ async function joinRoom(){
   if(data.status==="playing"){setLog("La sala ya esta en juego");return;}
   if(data.guest&&data.guest!==""){setLog("La sala ya tiene dos jugadores");return;}
   myRole="guest";
-  await update(roomRef,{guest:myName});
-  document.getElementById("guest-lobby-info").textContent="Sala: "+roomCode+" — Anfitrion: "+data.host;
+  await update(roomRef,{guest:myName, guestAvatar:myAvatar});
+  document.getElementById("guest-lobby-info").textContent="Sala: "+roomCode+" — vs "+data.host;
   showScreen("screen-guest-lobby");
 
   statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
@@ -281,7 +439,11 @@ async function hostStartGame(){
   await update(roomRef,{
     status:"playing",
     config:{numQ,timeLimit},
-    game:{qList:qList,qIdx:0,turn:0,scores:[0,0],phase:"question",ts:Date.now()}
+    game:{
+      qList:qList, qIdx:0, turn:0,
+      scores:[0,0], hp:[MAX_HP,MAX_HP],
+      phase:"question", ts:Date.now()
+    }
   });
 }
 
@@ -293,14 +455,30 @@ async function initGame(){
   currentConfig=data.config;
   currentNames.host=data.host;
   currentNames.guest=data.guest;
-  document.getElementById("gname-p1").textContent=data.host;
-  document.getElementById("gname-p2").textContent=data.guest;
+  currentAvatars.host=data.hostAvatar||"warrior";
+  currentAvatars.guest=data.guestAvatar||"robot";
+
+  // Renderizar avatares
+  document.getElementById("fname-p1").textContent=data.host;
+  document.getElementById("frole-p1").textContent=AVATAR_NAMES[currentAvatars.host]||"";
+  document.getElementById("avatar-p1").innerHTML=AVATARS[currentAvatars.host]||AVATARS.warrior;
+  document.getElementById("fname-p2").textContent=data.guest;
+  document.getElementById("frole-p2").textContent=AVATAR_NAMES[currentAvatars.guest]||"";
+  document.getElementById("avatar-p2").innerHTML=AVATARS[currentAvatars.guest]||AVATARS.robot;
+  renderHP(0, MAX_HP);
+  renderHP(1, MAX_HP);
+
   lastQIdx=-1;
   showScreen("screen-game");
 
   gameUnsub=onValue(ref(db,"rooms/"+roomCode+"/game"),snap=>{
     const g=snap.val();
     if(!g) return;
+    // Actualizar HP siempre
+    if(g.hp){
+      renderHP(0, g.hp[0]);
+      renderHP(1, g.hp[1]);
+    }
     if(g.phase==="finished"){showResult(g);return;}
     if(g.phase==="question"&&g.qIdx!==lastQIdx){
       lastQIdx=g.qIdx;
@@ -315,27 +493,37 @@ function renderQuestion(g){
   const q=g.qList[g.qIdx];
   const names=[currentNames.host,currentNames.guest];
   const isMyTurn=(myRole==="host"&&g.turn===0)||(myRole==="guest"&&g.turn===1);
+
   document.getElementById("turn-name").textContent=names[g.turn];
-  document.getElementById("sc-p1").className="score-card"+(g.turn===0?" active":"");
-  document.getElementById("sc-p2").className="score-card"+(g.turn===1?" active":"");
-  document.getElementById("gpts-p1").textContent=g.scores[0];
-  document.getElementById("gpts-p2").textContent=g.scores[1];
+  document.getElementById("fighter-p1").classList.toggle("active-turn", g.turn===0);
+  document.getElementById("fighter-p2").classList.toggle("active-turn", g.turn===1);
   document.getElementById("progress-txt").textContent="Pregunta "+(g.qIdx+1)+" de "+g.qList.length;
   document.getElementById("q-badge").innerHTML='<span class="badge badge-'+(q.topic==="Calculo"?"calc":"ode")+'">'+q.topic+'</span>';
-  document.getElementById("q-text").textContent=q.q;
+
+  // Renderizar pregunta con KaTeX
+  const qEl = document.getElementById("q-text");
+  qEl.innerHTML="";
+  renderKatex(qEl, q.q);
+
   document.getElementById("status-msg").textContent="";
   document.getElementById("status-msg").className="status";
-  document.getElementById("game-info").textContent=isMyTurn?"Es tu turno — responde!":"Esperando al oponente...";
+  document.getElementById("game-info").textContent=isMyTurn?"Es tu turno — ataca!":"Esperando al oponente...";
+
   const opts=document.getElementById("options");
   opts.innerHTML="";
   q.opts.forEach((o,i)=>{
     const btn=document.createElement("button");
     btn.className="opt-btn";
-    btn.textContent=o;
+    // Renderizar opciones con KaTeX
+    const span=document.createElement("span");
+    try { katex.render(o, span, {throwOnError:false, displayMode:false}); }
+    catch(e){ span.textContent=o; }
+    btn.appendChild(span);
     btn.disabled=!isMyTurn;
     if(isMyTurn) btn.addEventListener("click",()=>submitAnswer(i,g));
     opts.appendChild(btn);
   });
+
   if(isMyTurn){
     timeLeft=currentConfig.timeLimit;
     updateBar(currentConfig.timeLimit);
@@ -346,7 +534,7 @@ function renderQuestion(g){
     },1000);
   } else {
     document.getElementById("timer-bar").style.width="100%";
-    document.getElementById("timer-bar").style.background="#4A80D4";
+    document.getElementById("timer-bar").style.background="#7c6af7";
   }
 }
 
@@ -354,23 +542,52 @@ async function submitAnswer(idx,g){
   if(answered)return;
   answered=true;
   clearInterval(timerInterval);
+
   const q=g.qList[g.qIdx];
   const correct=idx===q.ans;
+  const attacker=g.turn;        // quien responde
+  const defender=g.turn===0?1:0; // quien recibe daño si correcto
+
   const btns=document.querySelectorAll(".opt-btn");
   btns.forEach(b=>b.disabled=true);
   if(idx>=0)btns[idx].classList.add(correct?"correct":"wrong");
   btns[q.ans].classList.add("correct");
+
   const status=document.getElementById("status-msg");
-  if(correct){status.textContent="Correcto! +1 punto";status.className="status correct";}
-  else if(idx===-1){status.textContent="Tiempo! La respuesta era: "+q.opts[q.ans];status.className="status wrong";}
-  else{status.textContent="Incorrecto. La respuesta era: "+q.opts[q.ans];status.className="status wrong";}
+  const newHP=[...g.hp];
   const newScores=[g.scores[0],g.scores[1]];
-  if(correct)newScores[g.turn]++;
+
+  if(correct){
+    // Ataque al oponente
+    newHP[defender]=Math.max(0, newHP[defender]-DMG_CORRECT);
+    newScores[attacker]++;
+    animateFighter(attacker,"attacking");
+    setTimeout(()=>animateFighter(defender,"taking-hit"),300);
+    showDamage(defender, DMG_CORRECT, false);
+    status.textContent="Correcto! Atacas al oponente (-"+DMG_CORRECT+" HP)";
+    status.className="status correct";
+  } else {
+    // Daño a uno mismo
+    newHP[attacker]=Math.max(0, newHP[attacker]-DMG_WRONG);
+    animateFighter(attacker,"taking-hit");
+    showDamage(attacker, DMG_WRONG, false);
+    if(idx===-1){
+      status.textContent="Tiempo! Pierdes -"+DMG_WRONG+" HP";
+    } else {
+      status.textContent="Incorrecto! Pierdes -"+DMG_WRONG+" HP";
+    }
+    status.className="status wrong";
+  }
+
   const nextIdx=g.qIdx+1;
-  const finished=nextIdx>=g.qList.length;
+  const someoneDown=newHP[0]<=0||newHP[1]<=0;
+  const finished=nextIdx>=g.qList.length||someoneDown;
+
   setTimeout(async()=>{
     await update(ref(db,"rooms/"+roomCode+"/game"),{
-      scores:newScores,qIdx:nextIdx,
+      scores:newScores,
+      hp:newHP,
+      qIdx:nextIdx,
       turn:g.turn===0?1:0,
       phase:finished?"finished":"question",
       ts:Date.now()
@@ -382,24 +599,37 @@ function updateBar(total){
   const pct=Math.max(0,(timeLeft/total)*100);
   const bar=document.getElementById("timer-bar");
   bar.style.width=pct+"%";
-  bar.style.background=pct>50?"#4A80D4":pct>25?"#E8A020":"#D04030";
+  bar.style.background=pct>50?"#7c6af7":pct>25?"#f39c12":"#e74c3c";
 }
 
 function showResult(g){
   clearInterval(timerInterval);
   if(gameUnsub){gameUnsub();gameUnsub=null;}
   showScreen("screen-result");
+
   const s0=g.scores[0],s1=g.scores[1];
-  let winner,sub;
-  if(s0>s1){winner="Gana "+currentNames.host+"!";sub="Con "+s0+" puntos contra "+s1;}
-  else if(s1>s0){winner="Gana "+currentNames.guest+"!";sub="Con "+s1+" puntos contra "+s0;}
-  else{winner="Empate!";sub="Ambos con "+s0+" puntos";}
+  const hp0=Math.max(0,g.hp[0]), hp1=Math.max(0,g.hp[1]);
+  let winner,sub,trophy="🏆";
+
+  // Gana quien tenga mas HP, en empate quien tenga mas puntos
+  if(hp0>hp1){winner="Gana "+currentNames.host+"!";sub="Con "+hp0+" HP restantes";}
+  else if(hp1>hp0){winner="Gana "+currentNames.guest+"!";sub="Con "+hp1+" HP restantes";}
+  else if(s0>s1){winner="Gana "+currentNames.host+"!";sub="Empate de HP — mas preguntas correctas";}
+  else if(s1>s0){winner="Gana "+currentNames.guest+"!";sub="Empate de HP — mas preguntas correctas";}
+  else{winner="Empate total!";sub="Guerreros de igual nivel";trophy="⚔️";}
+
+  document.getElementById("res-trophy").textContent=trophy;
   document.getElementById("res-winner").textContent=winner;
   document.getElementById("res-sub").textContent=sub;
   document.getElementById("res-l1").textContent=currentNames.host;
   document.getElementById("res-l2").textContent=currentNames.guest;
-  document.getElementById("res-p1").textContent=s0+" pts";
-  document.getElementById("res-p2").textContent=s1+" pts";
+  document.getElementById("res-avatar-p1").innerHTML=AVATARS[currentAvatars.host]||AVATARS.warrior;
+  document.getElementById("res-avatar-p2").innerHTML=AVATARS[currentAvatars.guest]||AVATARS.robot;
+  document.getElementById("res-p1").textContent=s0+" puntos";
+  document.getElementById("res-p2").textContent=s1+" puntos";
+  document.getElementById("res-hp1").textContent=hp0+" HP restantes";
+  document.getElementById("res-hp2").textContent=hp1+" HP restantes";
+
   if(myRole==="host") setTimeout(()=>remove(roomRef),3000);
 }
 
@@ -410,7 +640,7 @@ function leaveRoom(){
   if(guestUnsub){guestUnsub();guestUnsub=null;}
   if(roomRef){
     if(myRole==="host") remove(roomRef);
-    else update(roomRef,{guest:""});
+    else update(roomRef,{guest:"",guestAvatar:""});
   }
   roomRef=null; lastQIdx=-1;
   goHome();

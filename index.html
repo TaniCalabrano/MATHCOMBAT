@@ -7,212 +7,323 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: system-ui, sans-serif; background: #0f0f1a; color: #e8e8f0; min-height: 100vh; }
-.screen { display: none; max-width: 720px; margin: auto; padding: 2rem 1rem; }
-.screen.active { display: block; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,sans-serif;background:#0a0a14;color:#e8e8f0;min-height:100vh;}
+.screen{display:none;max-width:740px;margin:auto;padding:1.5rem 1rem;}
+.screen.active{display:block;}
 
-/* HOME */
-.home-title { font-size: 36px; font-weight: 700; text-align: center; margin-bottom: 4px; color: #fff; letter-spacing: 2px; }
-.home-title span { color: #7c6af7; }
-.home-sub { font-size: 14px; color: #888; text-align: center; margin-bottom: 2rem; }
-.card { background: #1a1a2e; border: 1px solid #2a2a45; border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; }
-label { font-size: 12px; color: #888; display: block; margin-bottom: 4px; margin-top: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-input, select { width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #2a2a45; border-radius: 8px; background: #0f0f1a; color: #e8e8f0; outline: none; }
-input:focus, select:focus { border-color: #7c6af7; }
-.btn { display: block; width: 100%; padding: 12px; font-size: 15px; font-weight: 600; border: 1px solid #2a2a45; border-radius: 8px; background: #1a1a2e; color: #e8e8f0; cursor: pointer; margin-top: 1rem; transition: all 0.15s; letter-spacing: 0.5px; }
-.btn:hover { background: #2a2a45; }
-.btn-primary { background: #7c6af7; color: #fff; border-color: #7c6af7; }
-.btn-primary:hover { background: #6a58e0; }
-.btn-danger { color: #e74c3c; border-color: #4a2020; }
-.divider { text-align: center; font-size: 12px; color: #444; margin: 1rem 0; }
-.log  { font-size: 12px; color: #e74c3c; text-align: center; margin-top: 0.5rem; min-height: 16px; }
-.info { font-size: 12px; color: #7c6af7; text-align: center; margin-top: 0.5rem; }
-.room-code { font-size: 40px; font-weight: 700; letter-spacing: 10px; text-align: center; padding: 1rem; background: #0f0f1a; border-radius: 8px; margin: 1rem 0; color: #7c6af7; }
-.waiting-msg { text-align: center; padding: 1.5rem 1rem; }
-.waiting-msg .big { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-.waiting-msg .small { font-size: 13px; color: #888; }
-.dot-anim::after { content: '.'; animation: dots 1.5s infinite; }
-@keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+/* TIPOGRAFIA */
+h1{font-size:32px;font-weight:800;text-align:center;color:#fff;letter-spacing:2px;}
+h1 span{color:#a78bfa;}
+.sub{font-size:13px;color:#666;text-align:center;margin-bottom:1.5rem;}
 
-/* ARENA DE COMBATE */
-.arena { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1rem; }
-.fighter { background: #1a1a2e; border: 1px solid #2a2a45; border-radius: 14px; padding: 1rem; text-align: center; position: relative; transition: border-color 0.3s; }
-.fighter.active-turn { border-color: #7c6af7; box-shadow: 0 0 16px rgba(124,106,247,0.3); }
-.fighter.taking-hit { animation: hitFlash 0.4s ease; }
-.fighter.attacking { animation: attackBob 0.4s ease; }
-@keyframes hitFlash { 0%{background:#1a1a2e} 30%{background:#3a1a1a} 100%{background:#1a1a2e} }
-@keyframes attackBob { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
-.fighter-name { font-size: 13px; font-weight: 600; color: #e8e8f0; margin-bottom: 6px; }
-.fighter-role { font-size: 10px; color: #666; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-.avatar-wrap { width: 80px; height: 80px; margin: 0 auto 10px; }
-.hp-bar-wrap { background: #0f0f1a; border-radius: 99px; height: 8px; margin-bottom: 4px; overflow: hidden; border: 1px solid #2a2a45; }
-.hp-bar { height: 100%; border-radius: 99px; transition: width 0.6s ease, background 0.3s; }
-.hp-text { font-size: 11px; color: #888; }
-.dmg-popup { position: absolute; top: 10px; right: 10px; font-size: 18px; font-weight: 700; opacity: 0; pointer-events: none; }
-.dmg-popup.show-dmg { animation: popDmg 1s ease forwards; }
-.dmg-popup.show-heal { animation: popHeal 1s ease forwards; color: #2ecc71; }
-@keyframes popDmg { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-30px)} }
-@keyframes popHeal { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-30px)} }
+/* CARD UI */
+.ui-card{background:#13132a;border:1px solid #2a2a50;border-radius:14px;padding:1.25rem;margin-bottom:.75rem;}
+label{font-size:11px;color:#666;display:block;margin-bottom:3px;margin-top:10px;text-transform:uppercase;letter-spacing:.5px;}
+input,select{width:100%;padding:9px 12px;font-size:14px;border:1px solid #2a2a50;border-radius:8px;background:#0a0a14;color:#e8e8f0;outline:none;}
+input:focus,select:focus{border-color:#a78bfa;}
+.btn{display:block;width:100%;padding:11px;font-size:14px;font-weight:600;border:1px solid #2a2a50;border-radius:8px;background:#13132a;color:#e8e8f0;cursor:pointer;margin-top:.75rem;transition:all .15s;letter-spacing:.5px;}
+.btn:hover{background:#2a2a50;}
+.btn-purple{background:#7c3aed;color:#fff;border-color:#7c3aed;}
+.btn-purple:hover{background:#6d28d9;}
+.btn-red{color:#f87171;border-color:#3a1a1a;}
+.divider{text-align:center;font-size:11px;color:#333;margin:.75rem 0;}
+.log{font-size:12px;color:#f87171;text-align:center;margin-top:.5rem;min-height:16px;}
+.info{font-size:12px;color:#a78bfa;text-align:center;margin-top:.5rem;}
+.room-code{font-size:38px;font-weight:800;letter-spacing:10px;text-align:center;padding:.75rem;background:#0a0a14;border-radius:8px;margin:.75rem 0;color:#a78bfa;}
+.wait-big{font-size:17px;font-weight:600;text-align:center;margin:1rem 0 4px;}
+.wait-small{font-size:12px;color:#666;text-align:center;}
+.dot::after{content:'.';animation:dots 1.5s infinite;}
+@keyframes dots{0%{content:'.'}33%{content:'..'}66%{content:'...'}}
+
+/* ARENA */
+.arena{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:.75rem;}
+.fighter{background:#13132a;border:1px solid #2a2a50;border-radius:12px;padding:.875rem;text-align:center;transition:border-color .3s,box-shadow .3s;position:relative;}
+.fighter.myturn{border-color:#a78bfa;box-shadow:0 0 18px rgba(167,139,250,.3);}
+.fighter.hit{animation:hitF .4s ease;}
+.fighter.atk{animation:atkF .35s ease;}
+@keyframes hitF{0%{background:#13132a}40%{background:#3a1010}100%{background:#13132a}}
+@keyframes atkF{0%{transform:scale(1)}50%{transform:scale(1.07)}100%{transform:scale(1)}}
+.fname{font-size:12px;font-weight:700;margin-bottom:3px;}
+.frole{font-size:10px;color:#555;margin-bottom:6px;text-transform:uppercase;}
+.av{width:64px;height:64px;margin:0 auto 8px;}
+.hp-wrap{background:#0a0a14;border-radius:99px;height:7px;margin-bottom:3px;overflow:hidden;border:1px solid #2a2a50;}
+.hp-fill{height:100%;border-radius:99px;transition:width .6s,background .3s;}
+.hp-txt{font-size:10px;color:#666;}
+.shield-badge{position:absolute;top:6px;right:6px;background:#1e3a5f;border:1px solid #3b82f6;border-radius:6px;font-size:10px;color:#60a5fa;padding:2px 6px;display:none;}
+.shield-badge.on{display:block;}
+.dmgpop{position:absolute;top:8px;left:8px;font-size:16px;font-weight:800;opacity:0;pointer-events:none;color:#f87171;}
+.dmgpop.show{animation:pop .9s ease forwards;}
+@keyframes pop{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-28px)}}
 
 /* TIMER */
-.timer-wrap { background: #1a1a2e; border-radius: 99px; height: 6px; margin-bottom: 1rem; overflow: hidden; border: 1px solid #2a2a45; }
-.timer-bar { height: 100%; border-radius: 99px; transition: width 1s linear, background 0.5s; background: #7c6af7; }
+.timer-wrap{background:#13132a;border-radius:99px;height:5px;margin:.5rem 0;overflow:hidden;}
+.timer-fill{height:100%;border-radius:99px;transition:width 1s linear,background .5s;background:#a78bfa;}
+
+/* FASE LABELS */
+.phase-label{text-align:center;font-size:12px;color:#a78bfa;font-weight:600;margin:.4rem 0;text-transform:uppercase;letter-spacing:1px;}
+.turn-label{text-align:center;font-size:13px;color:#888;margin-bottom:.5rem;}
+.turn-label span{color:#a78bfa;font-weight:700;}
+
+/* CARTAS EN MANO */
+.hand-title{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.5rem;}
+.hand{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:.75rem;}
+.card-item{width:88px;border-radius:10px;padding:.5rem .4rem;text-align:center;cursor:pointer;transition:transform .2s,box-shadow .2s;border:1.5px solid transparent;flex-shrink:0;}
+.card-item:hover{transform:translateY(-6px);box-shadow:0 8px 20px rgba(0,0,0,.5);}
+.card-item.selected{transform:translateY(-10px);box-shadow:0 0 16px rgba(167,139,250,.6);}
+.card-item.used{opacity:.3;cursor:default;transform:none;}
+.card-item.disabled{cursor:default;}
+.card-normal{background:linear-gradient(160deg,#1a2a4a,#0f1a30);border-color:#3b82f6;}
+.card-strong{background:linear-gradient(160deg,#2a1a4a,#1a0f30);border-color:#8b5cf6;}
+.card-legend{background:linear-gradient(160deg,#3a2a0a,#2a1a00);border-color:#f59e0b;}
+.card-special{background:linear-gradient(160deg,#0a3a2a,#001a10);border-color:#10b981;}
+.card-level{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.card-normal .card-level{color:#60a5fa;}
+.card-strong .card-level{color:#c4b5fd;}
+.card-legend .card-level{color:#fbbf24;}
+.card-special .card-level{color:#34d399;}
+.card-name{font-size:9px;color:#ccc;margin-bottom:4px;line-height:1.2;}
+.card-dmg{font-size:13px;font-weight:800;}
+.card-normal .card-dmg{color:#93c5fd;}
+.card-strong .card-dmg{color:#c4b5fd;}
+.card-legend .card-dmg{color:#fcd34d;}
+.card-special .card-dmg{color:#6ee7b7;}
+
+/* CARTA ATACANTE (la que el rival lanza) */
+.attack-card-display{background:#13132a;border:2px solid #a78bfa;border-radius:12px;padding:1rem;margin-bottom:.75rem;text-align:center;}
+.attack-card-display .acd-level{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#a78bfa;margin-bottom:4px;}
+.attack-card-display .acd-name{font-size:13px;color:#e8e8f0;margin-bottom:8px;}
+.attack-card-display .acd-dmg{font-size:22px;font-weight:800;color:#f87171;}
 
 /* PREGUNTA */
-.turn-box { text-align: center; font-size: 13px; color: #888; margin-bottom: 0.5rem; }
-.turn-box span { font-weight: 700; color: #7c6af7; }
-.progress { font-size: 11px; color: #555; text-align: center; margin-bottom: 0.75rem; }
-.question-card { background: #1a1a2e; border: 1px solid #2a2a45; border-radius: 14px; padding: 1.5rem; margin-bottom: 0.75rem; }
-.badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 6px; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-.badge-calc { background: #1a2a45; color: #7cb4f7; }
-.badge-ode  { background: #2a1a45; color: #c47cf7; }
-.q-text { font-size: 15px; line-height: 1.7; margin-bottom: 1.25rem; color: #e8e8f0; }
-.options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.opt-btn { background: #0f0f1a; border: 1px solid #2a2a45; border-radius: 8px; padding: 0.75rem 1rem; font-size: 14px; color: #e8e8f0; cursor: pointer; text-align: left; transition: all 0.15s; }
-.opt-btn:hover:not(:disabled) { background: #2a2a45; border-color: #7c6af7; }
-.opt-btn.correct { background: #0f2a1a; border-color: #2ecc71; color: #2ecc71; }
-.opt-btn.wrong   { background: #2a0f0f; border-color: #e74c3c; color: #e74c3c; }
-.opt-btn:disabled { cursor: default; opacity: 0.7; }
-.status { font-size: 13px; text-align: center; margin: 0.5rem 0; min-height: 20px; color: #888; }
-.status.correct { color: #2ecc71; font-weight: 600; }
-.status.wrong   { color: #e74c3c; font-weight: 600; }
+.q-card{background:#13132a;border:1px solid #2a2a50;border-radius:12px;padding:1.25rem;margin-bottom:.75rem;}
+.qbadge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:5px;margin-bottom:8px;font-weight:700;text-transform:uppercase;}
+.qbadge-c{background:#1a2a45;color:#60a5fa;}
+.qbadge-e{background:#2a1a45;color:#c4b5fd;}
+.qtxt{font-size:14px;line-height:1.7;margin-bottom:1rem;color:#e8e8f0;}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.opt{background:#0a0a14;border:1px solid #2a2a50;border-radius:8px;padding:.65rem .9rem;font-size:13px;color:#e8e8f0;cursor:pointer;text-align:left;transition:all .15s;}
+.opt:hover:not(:disabled){background:#2a2a50;border-color:#a78bfa;}
+.opt.correct{background:#0f2a1a;border-color:#10b981;color:#6ee7b7;}
+.opt.wrong{background:#2a0f0f;border-color:#f87171;color:#f87171;}
+.opt:disabled{cursor:default;opacity:.7;}
+.status-msg{font-size:13px;text-align:center;margin:.5rem 0;min-height:18px;color:#888;}
+.status-msg.ok{color:#6ee7b7;font-weight:600;}
+.status-msg.bad{color:#f87171;font-weight:600;}
+
+/* MODAL OVERLAY */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:999;display:none;}
+.modal.open{display:flex;}
+.modal-box{background:#13132a;border:1px solid #2a2a50;border-radius:16px;padding:2rem;max-width:360px;width:90%;text-align:center;}
+.modal-title{font-size:20px;font-weight:700;margin-bottom:.5rem;}
+.modal-sub{font-size:13px;color:#888;margin-bottom:1.5rem;}
+
+/* MONEDA */
+.coin{width:80px;height:80px;margin:0 auto 1rem;position:relative;transform-style:preserve-3d;}
+.coin.spin{animation:coinSpin 2s ease forwards;}
+@keyframes coinSpin{
+  0%{transform:rotateY(0)}
+  80%{transform:rotateY(1440deg)}
+  100%{transform:rotateY(1440deg)}
+}
+.coin-face,.coin-back{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;backface-visibility:hidden;}
+.coin-face{background:radial-gradient(circle,#fbbf24,#d97706);border:3px solid #f59e0b;}
+.coin-back{background:radial-gradient(circle,#94a3b8,#475569);border:3px solid #64748b;transform:rotateY(180deg);}
+
+/* RULETA */
+.roulette-wrap{margin:1rem auto;width:120px;height:120px;position:relative;}
+.roulette-ring{width:120px;height:120px;border-radius:50%;border:4px solid #2a2a50;position:relative;overflow:hidden;}
+.roulette-seg{position:absolute;width:50%;height:50%;transform-origin:100% 100%;}
+.seg1{background:#10b981;transform:rotate(0deg) skewY(30deg);}
+.seg2{background:#f59e0b;transform:rotate(120deg) skewY(30deg);}
+.seg3{background:#f87171;transform:rotate(240deg) skewY(30deg);}
+.roulette-needle{position:absolute;top:4px;left:50%;transform:translateX(-50%);width:3px;height:30px;background:#fff;border-radius:2px;transform-origin:bottom center;}
+.roulette-center{position:absolute;inset:35%;background:#13132a;border-radius:50%;border:2px solid #2a2a50;}
+.spin-result{font-size:16px;font-weight:700;margin-top:.75rem;}
 
 /* RESULTADO */
-.result-winner { font-size: 28px; font-weight: 700; text-align: center; margin-bottom: 4px; color: #7c6af7; }
-.result-sub { font-size: 14px; color: #888; text-align: center; margin-bottom: 1.5rem; }
-.result-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
-.result-card { background: #0f0f1a; border: 1px solid #2a2a45; border-radius: 10px; padding: 1rem; text-align: center; }
-.result-card .rname { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-.result-card .rpts { font-size: 22px; font-weight: 700; color: #7c6af7; }
+.res-title{font-size:26px;font-weight:800;text-align:center;color:#a78bfa;margin-bottom:4px;}
+.res-sub{font-size:13px;color:#666;text-align:center;margin-bottom:1.25rem;}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem;}
+.res-box{background:#0a0a14;border:1px solid #2a2a50;border-radius:10px;padding:.875rem;text-align:center;}
+.res-box .rn{font-size:13px;font-weight:600;margin-bottom:4px;}
+.res-box .rp{font-size:20px;font-weight:800;color:#a78bfa;}
+.res-box .rh{font-size:11px;color:#666;margin-top:2px;}
 
-/* KaTeX fix para tema oscuro */
-.katex { color: #e8e8f0 !important; }
+.katex{color:#e8e8f0!important;}
 </style>
 </head>
 <body>
 
 <!-- HOME -->
-<div class="screen active" id="screen-home">
-  <div style="padding-top:1rem;">
-    <div class="home-title">MATH <span>COMBAT</span></div>
-    <div class="home-sub">Duelo matematico multijugador — Calculo y EDOs</div>
+<div class="screen active" id="s-home">
+  <div style="padding-top:.5rem;">
+    <h1>MATH <span>COMBAT</span></h1>
+    <div class="sub">Duelo de cartas matematico — Calculo y EDOs</div>
   </div>
-  <div class="card">
+  <div class="ui-card">
     <label>Tu nombre</label>
-    <input type="text" id="home-name" placeholder="Escribe tu nombre" maxlength="20" />
+    <input type="text" id="h-name" placeholder="Escribe tu nombre" maxlength="20"/>
     <label>Tu avatar</label>
-    <select id="home-avatar">
+    <select id="h-avatar">
       <option value="warrior">Guerrero</option>
       <option value="robot">Robot</option>
       <option value="scientist">Cientifico</option>
     </select>
     <div class="divider">— Que quieres hacer? —</div>
-    <button class="btn btn-primary" id="btn-create">Crear sala nueva</button>
-    <div style="margin-top:1rem;">
-      <label>Codigo de sala (para unirte)</label>
-      <input type="text" id="join-code" placeholder="Ej: A3F7" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-size:18px;" />
-      <button class="btn" id="btn-join">Unirse a sala</button>
-    </div>
+    <button class="btn btn-purple" id="btn-create">Crear sala</button>
+    <label>Codigo de sala</label>
+    <input type="text" id="h-code" placeholder="A3F7" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-size:18px;"/>
+    <button class="btn" id="btn-join">Unirse a sala</button>
   </div>
-  <div class="log" id="home-log"></div>
+  <div class="log" id="h-log"></div>
 </div>
 
 <!-- LOBBY HOST -->
-<div class="screen" id="screen-lobby">
-  <div class="home-title" style="font-size:24px;margin-bottom:4px;">Sala creada</div>
-  <div class="home-sub">Comparte este codigo con tu oponente</div>
-  <div class="card">
-    <div class="room-code" id="lobby-code">----</div>
-    <label>Preguntas por partida</label>
-    <select id="lobby-numq">
-      <option value="6">6 preguntas</option>
-      <option value="10" selected>10 preguntas</option>
-      <option value="14">14 preguntas</option>
-    </select>
-    <label>Tiempo por pregunta</label>
-    <select id="lobby-time">
-      <option value="20">20 segundos</option>
-      <option value="30" selected>30 segundos</option>
-      <option value="45">45 segundos</option>
-    </select>
-    <div class="waiting-msg">
-      <div class="big" id="lobby-status-title">Esperando oponente<span class="dot-anim"></span></div>
-      <div class="small" id="lobby-status-sub">Nadie conectado aun</div>
-    </div>
-    <button class="btn btn-primary" id="btn-start" style="display:none;">Iniciar combate</button>
-    <button class="btn btn-danger" id="btn-cancel">Cancelar</button>
+<div class="screen" id="s-lobby">
+  <h1 style="font-size:22px;margin-bottom:4px;">Sala creada</h1>
+  <div class="sub">Comparte este codigo</div>
+  <div class="ui-card">
+    <div class="room-code" id="l-code">----</div>
+    <div class="wait-big" id="l-title">Esperando oponente<span class="dot"></span></div>
+    <div class="wait-small" id="l-sub">Nadie conectado aun</div>
+    <button class="btn btn-purple" id="btn-start" style="display:none;margin-top:1rem;">Iniciar combate</button>
+    <button class="btn btn-red" id="btn-cancel">Cancelar</button>
   </div>
 </div>
 
 <!-- LOBBY GUEST -->
-<div class="screen" id="screen-guest-lobby">
-  <div class="card">
-    <div class="waiting-msg">
-      <div class="big">Conectado al combate</div>
-      <div class="small">Esperando que el anfitrion inicie<span class="dot-anim"></span></div>
-    </div>
-    <div class="info" id="guest-lobby-info"></div>
-    <button class="btn btn-danger" id="btn-leave-guest">Salir</button>
+<div class="screen" id="s-guest">
+  <div class="ui-card">
+    <div class="wait-big">Conectado</div>
+    <div class="wait-small">Esperando que el anfitrion inicie<span class="dot"></span></div>
+    <div class="info" id="g-info"></div>
+    <button class="btn btn-red" id="btn-gleave">Salir</button>
   </div>
 </div>
 
 <!-- JUEGO -->
-<div class="screen" id="screen-game">
-  <!-- Arena de combate -->
+<div class="screen" id="s-game">
+  <!-- Arena -->
   <div class="arena">
-    <div class="fighter" id="fighter-p1">
-      <div class="fighter-name" id="fname-p1">—</div>
-      <div class="fighter-role" id="frole-p1">—</div>
-      <div class="avatar-wrap" id="avatar-p1"></div>
-      <div class="hp-bar-wrap"><div class="hp-bar" id="hp-bar-p1" style="width:100%;background:#2ecc71;"></div></div>
-      <div class="hp-text" id="hp-text-p1">50 / 50</div>
-      <div class="dmg-popup" id="dmg-p1">-10</div>
+    <div class="fighter" id="f-p1">
+      <div class="shield-badge" id="shield-p1">🛡 Escudo</div>
+      <div class="fname" id="fn-p1">—</div>
+      <div class="frole" id="fr-p1">—</div>
+      <div class="av" id="av-p1"></div>
+      <div class="hp-wrap"><div class="hp-fill" id="hp-p1" style="width:100%;background:#10b981;"></div></div>
+      <div class="hp-txt" id="ht-p1">100/100</div>
+      <div class="dmgpop" id="dp-p1"></div>
     </div>
-    <div class="fighter" id="fighter-p2">
-      <div class="fighter-name" id="fname-p2">—</div>
-      <div class="fighter-role" id="frole-p2">—</div>
-      <div class="avatar-wrap" id="avatar-p2"></div>
-      <div class="hp-bar-wrap"><div class="hp-bar" id="hp-bar-p2" style="width:100%;background:#2ecc71;"></div></div>
-      <div class="hp-text" id="hp-text-p2">50 / 50</div>
-      <div class="dmg-popup" id="dmg-p2">-10</div>
+    <div class="fighter" id="f-p2">
+      <div class="shield-badge" id="shield-p2">🛡 Escudo</div>
+      <div class="fname" id="fn-p2">—</div>
+      <div class="frole" id="fr-p2">—</div>
+      <div class="av" id="av-p2"></div>
+      <div class="hp-wrap"><div class="hp-fill" id="hp-p2" style="width:100%;background:#10b981;"></div></div>
+      <div class="hp-txt" id="ht-p2">100/100</div>
+      <div class="dmgpop" id="dp-p2"></div>
     </div>
   </div>
 
-  <div class="timer-wrap"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
-  <div class="turn-box">Turno de <span id="turn-name">—</span></div>
-  <div class="progress" id="progress-txt">Pregunta 1 de 10</div>
+  <div class="phase-label" id="phase-label">Selecciona una carta</div>
+  <div class="turn-label">Turno de <span id="turn-name">—</span></div>
 
-  <div class="question-card">
-    <div id="q-badge"></div>
-    <div class="q-text" id="q-text"></div>
-    <div class="options" id="options"></div>
+  <!-- Carta atacante (visible para el defensor) -->
+  <div class="attack-card-display" id="atk-display" style="display:none;">
+    <div class="acd-level" id="acd-level">Normal</div>
+    <div class="acd-name" id="acd-name">—</div>
+    <div style="margin:.5rem 0;font-size:12px;color:#888;">Dano del ataque</div>
+    <div class="acd-dmg" id="acd-dmg">15</div>
   </div>
-  <div class="status" id="status-msg"></div>
-  <div class="info" id="game-info"></div>
+
+  <!-- Pregunta -->
+  <div class="q-card" id="q-card" style="display:none;">
+    <div id="q-badge-el"></div>
+    <div class="qtxt" id="q-text"></div>
+    <div class="opts" id="q-opts"></div>
+  </div>
+  <div class="status-msg" id="status-msg"></div>
+  <div class="info" id="g-action-info"></div>
+
+  <div class="timer-wrap" id="timer-wrap" style="display:none;">
+    <div class="timer-fill" id="timer-fill" style="width:100%;"></div>
+  </div>
+
+  <!-- Mi mano -->
+  <div id="my-hand-section">
+    <div class="hand-title" id="hand-title">Tu mano</div>
+    <div class="hand" id="my-hand"></div>
+  </div>
 </div>
 
 <!-- RESULTADO -->
-<div class="screen" id="screen-result">
-  <div class="card" style="text-align:center;">
-    <div style="font-size:60px;margin-bottom:0.5rem;" id="res-trophy">🏆</div>
-    <div class="result-winner" id="res-winner"></div>
-    <div class="result-sub" id="res-sub"></div>
-    <div class="result-scores">
-      <div class="result-card">
-        <div class="rname" id="res-l1"></div>
-        <div style="width:60px;margin:8px auto;" id="res-avatar-p1"></div>
-        <div class="rpts" id="res-p1"></div>
-        <div style="font-size:11px;color:#888;margin-top:2px;" id="res-hp1"></div>
+<div class="screen" id="s-result">
+  <div class="ui-card" style="text-align:center;">
+    <div style="font-size:56px;margin-bottom:.5rem;" id="r-trophy">🏆</div>
+    <div class="res-title" id="r-winner"></div>
+    <div class="res-sub" id="r-sub"></div>
+    <div class="res-grid">
+      <div class="res-box">
+        <div class="rn" id="r-n1"></div>
+        <div style="width:50px;margin:6px auto;" id="r-av1"></div>
+        <div class="rp" id="r-p1"></div>
+        <div class="rh" id="r-h1"></div>
       </div>
-      <div class="result-card">
-        <div class="rname" id="res-l2"></div>
-        <div style="width:60px;margin:8px auto;" id="res-avatar-p2"></div>
-        <div class="rpts" id="res-p2"></div>
-        <div style="font-size:11px;color:#888;margin-top:2px;" id="res-hp2"></div>
+      <div class="res-box">
+        <div class="rn" id="r-n2"></div>
+        <div style="width:50px;margin:6px auto;" id="r-av2"></div>
+        <div class="rp" id="r-p2"></div>
+        <div class="rh" id="r-h2"></div>
       </div>
     </div>
-    <button class="btn btn-primary" id="btn-home">Nueva partida</button>
+    <button class="btn btn-purple" id="btn-home">Nueva partida</button>
+  </div>
+</div>
+
+<!-- MODAL CARA O SELLO -->
+<div class="modal" id="modal-coin">
+  <div class="modal-box">
+    <div class="modal-title" id="coin-title">Cara o Sello</div>
+    <div class="modal-sub" id="coin-sub">Elige para decidir quien inicia</div>
+    <div class="coin" id="coin-el">
+      <div class="coin-face">☀️</div>
+      <div class="coin-back">🌙</div>
+    </div>
+    <div id="coin-btns">
+      <button class="btn btn-purple" id="btn-cara" style="margin-bottom:.5rem;">Cara ☀️</button>
+      <button class="btn" id="btn-sello">Sello 🌙</button>
+    </div>
+    <div class="info" id="coin-result" style="font-size:15px;font-weight:700;min-height:20px;"></div>
+  </div>
+</div>
+
+<!-- MODAL RULETA -->
+<div class="modal" id="modal-roulette">
+  <div class="modal-box">
+    <div class="modal-title">Ruleta del Destino</div>
+    <div class="modal-sub">Respuesta correcta — girando la ruleta...</div>
+    <div class="roulette-wrap">
+      <div class="roulette-ring" id="roulette-ring">
+        <div class="roulette-seg seg1"></div>
+        <div class="roulette-seg seg2"></div>
+        <div class="roulette-seg seg3"></div>
+      </div>
+      <div class="roulette-needle" id="roulette-needle"></div>
+      <div class="roulette-center"></div>
+    </div>
+    <div class="spin-result" id="spin-result"></div>
+    <div class="info" id="spin-outcome" style="margin-top:.5rem;font-size:13px;"></div>
+  </div>
+</div>
+
+<!-- MODAL EFECTO ESPECIAL -->
+<div class="modal" id="modal-special">
+  <div class="modal-box">
+    <div style="font-size:40px;margin-bottom:.5rem;" id="sp-icon">✨</div>
+    <div class="modal-title" id="sp-title">Carta Especial</div>
+    <div class="modal-sub" id="sp-desc">Efecto aplicado</div>
+    <button class="btn btn-purple" id="btn-sp-ok">Continuar</button>
   </div>
 </div>
 
@@ -221,437 +332,694 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, set, update, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const app = initializeApp({
-  apiKey: "AIzaSyBJX7E8Svv_2pqe6Ylo2J6DrsZmuhMo9vg",
-  authDomain: "mathcombat.firebaseapp.com",
-  databaseURL: "https://mathcombat-default-rtdb.firebaseio.com",
-  projectId: "mathcombat",
-  storageBucket: "mathcombat.firebasestorage.app",
-  messagingSenderId: "613800561121",
-  appId: "1:613800561121:web:09181e422452585e87eaa0"
+  apiKey:"AIzaSyBJX7E8Svv_2pqe6Ylo2J6DrsZmuhMo9vg",
+  authDomain:"mathcombat.firebaseapp.com",
+  databaseURL:"https://mathcombat-default-rtdb.firebaseio.com",
+  projectId:"mathcombat",
+  storageBucket:"mathcombat.firebasestorage.app",
+  messagingSenderId:"613800561121",
+  appId:"1:613800561121:web:09181e422452585e87eaa0"
 });
 const db = getDatabase(app);
 
 // =====================================================================
-// AVATARES SVG
+// AVATARES
 // =====================================================================
-const AVATARS = {
-  warrior: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="40" cy="22" r="14" fill="#c0392b"/>
-    <rect x="28" y="36" width="24" height="28" rx="4" fill="#c0392b"/>
-    <rect x="20" y="36" width="8" height="20" rx="3" fill="#e74c3c"/>
-    <rect x="52" y="36" width="8" height="20" rx="3" fill="#e74c3c"/>
-    <rect x="30" y="64" width="8" height="12" rx="2" fill="#922b21"/>
-    <rect x="42" y="64" width="8" height="12" rx="2" fill="#922b21"/>
-    <rect x="54" y="20" width="4" height="28" rx="2" fill="#f39c12"/>
-    <rect x="52" y="18" width="8" height="4" rx="1" fill="#f39c12"/>
-    <circle cx="35" cy="20" r="2" fill="#fff"/>
-    <circle cx="45" cy="20" r="2" fill="#fff"/>
-    <path d="M35 27 Q40 31 45 27" stroke="#fff" stroke-width="1.5" fill="none"/>
-  </svg>`,
-  robot: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-    <rect x="26" y="10" width="28" height="24" rx="4" fill="#5d6d7e"/>
-    <rect x="30" y="14" width="8" height="6" rx="2" fill="#3498db"/>
-    <rect x="42" y="14" width="8" height="6" rx="2" fill="#3498db"/>
-    <rect x="32" y="24" width="16" height="4" rx="2" fill="#2ecc71"/>
-    <rect x="22" y="10" width="4" height="4" rx="1" fill="#95a5a6"/>
-    <rect x="54" y="10" width="4" height="4" rx="1" fill="#95a5a6"/>
-    <rect x="26" y="34" width="28" height="26" rx="3" fill="#5d6d7e"/>
-    <rect x="32" y="38" width="6" height="8" rx="1" fill="#e74c3c"/>
-    <rect x="42" y="38" width="6" height="8" rx="1" fill="#3498db"/>
-    <rect x="16" y="34" width="10" height="18" rx="3" fill="#7f8c8d"/>
-    <rect x="54" y="34" width="10" height="18" rx="3" fill="#7f8c8d"/>
-    <rect x="30" y="60" width="8" height="16" rx="2" fill="#4a5568"/>
-    <rect x="42" y="60" width="8" height="16" rx="2" fill="#4a5568"/>
-    <circle cx="40" cy="6" r="3" fill="#95a5a6"/>
-    <line x1="40" y1="9" x2="40" y2="10" stroke="#95a5a6" stroke-width="1.5"/>
-  </svg>`,
-  scientist: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="40" cy="20" r="14" fill="#f0d9b5"/>
-    <rect x="28" y="34" width="24" height="26" rx="3" fill="#fff"/>
-    <rect x="30" y="34" width="20" height="26" rx="3" fill="#ecf0f1"/>
-    <rect x="34" y="40" width="6" height="10" rx="2" fill="#3498db" opacity="0.6"/>
-    <rect x="42" y="43" width="6" height="7" rx="2" fill="#2ecc71" opacity="0.6"/>
-    <rect x="20" y="34" width="8" height="18" rx="3" fill="#bdc3c7"/>
-    <rect x="52" y="34" width="8" height="18" rx="3" fill="#bdc3c7"/>
-    <rect x="30" y="60" width="8" height="14" rx="2" fill="#7f8c8d"/>
-    <rect x="42" y="60" width="8" height="14" rx="2" fill="#7f8c8d"/>
-    <rect x="30" y="8" width="20" height="8" rx="2" fill="#2c3e50"/>
-    <circle cx="34" cy="18" r="3" fill="#fff" opacity="0.8"/>
-    <circle cx="46" cy="18" r="3" fill="#fff" opacity="0.8"/>
-    <path d="M36 26 Q40 29 44 26" stroke="#c0392b" stroke-width="1.5" fill="none"/>
-    <line x1="48" y1="8" x2="52" y2="4" stroke="#2c3e50" stroke-width="2"/>
-    <line x1="52" y1="4" x2="55" y2="7" stroke="#2c3e50" stroke-width="2"/>
-  </svg>`
+const AVS = {
+  warrior:`<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="22" r="14" fill="#c0392b"/><rect x="28" y="36" width="24" height="28" rx="4" fill="#c0392b"/><rect x="20" y="36" width="8" height="20" rx="3" fill="#e74c3c"/><rect x="52" y="36" width="8" height="20" rx="3" fill="#e74c3c"/><rect x="30" y="64" width="8" height="12" rx="2" fill="#922b21"/><rect x="42" y="64" width="8" height="12" rx="2" fill="#922b21"/><rect x="54" y="20" width="4" height="28" rx="2" fill="#f39c12"/><rect x="52" y="18" width="8" height="4" rx="1" fill="#f39c12"/><circle cx="35" cy="20" r="2" fill="#fff"/><circle cx="45" cy="20" r="2" fill="#fff"/><path d="M35 27 Q40 31 45 27" stroke="#fff" stroke-width="1.5" fill="none"/></svg>`,
+  robot:`<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect x="26" y="10" width="28" height="24" rx="4" fill="#5d6d7e"/><rect x="30" y="14" width="8" height="6" rx="2" fill="#3498db"/><rect x="42" y="14" width="8" height="6" rx="2" fill="#3498db"/><rect x="32" y="24" width="16" height="4" rx="2" fill="#2ecc71"/><rect x="22" y="10" width="4" height="4" rx="1" fill="#95a5a6"/><rect x="54" y="10" width="4" height="4" rx="1" fill="#95a5a6"/><rect x="26" y="34" width="28" height="26" rx="3" fill="#5d6d7e"/><rect x="32" y="38" width="6" height="8" rx="1" fill="#e74c3c"/><rect x="42" y="38" width="6" height="8" rx="1" fill="#3498db"/><rect x="16" y="34" width="10" height="18" rx="3" fill="#7f8c8d"/><rect x="54" y="34" width="10" height="18" rx="3" fill="#7f8c8d"/><rect x="30" y="60" width="8" height="16" rx="2" fill="#4a5568"/><rect x="42" y="60" width="8" height="16" rx="2" fill="#4a5568"/><circle cx="40" cy="6" r="3" fill="#95a5a6"/></svg>`,
+  scientist:`<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="20" r="14" fill="#f0d9b5"/><rect x="28" y="34" width="24" height="26" rx="3" fill="#ecf0f1"/><rect x="34" y="40" width="6" height="10" rx="2" fill="#3498db" opacity=".6"/><rect x="42" y="43" width="6" height="7" rx="2" fill="#2ecc71" opacity=".6"/><rect x="20" y="34" width="8" height="18" rx="3" fill="#bdc3c7"/><rect x="52" y="34" width="8" height="18" rx="3" fill="#bdc3c7"/><rect x="30" y="60" width="8" height="14" rx="2" fill="#7f8c8d"/><rect x="42" y="60" width="8" height="14" rx="2" fill="#7f8c8d"/><rect x="30" y="8" width="20" height="8" rx="2" fill="#2c3e50"/><circle cx="34" cy="18" r="3" fill="#fff" opacity=".8"/><circle cx="46" cy="18" r="3" fill="#fff" opacity=".8"/><path d="M36 26 Q40 29 44 26" stroke="#c0392b" stroke-width="1.5" fill="none"/></svg>`
 };
+const AVNAMES = {warrior:"Guerrero",robot:"Robot",scientist:"Cientifico"};
 
-const AVATAR_NAMES = { warrior:"Guerrero", robot:"Robot", scientist:"Cientifico" };
-
-const QUESTIONS = [
-  { topic:"Calculo", q:"\\text{Derivada de } f(x) = x^3 + 2x", opts:["3x^2+2","3x^2+2x","x^2+2","3x+2"], ans:0 },
-  { topic:"Calculo", q:"\\int_0^1 x^2\\,dx =", opts:["\\frac{1}{2}","\\frac{1}{3}","\\frac{1}{4}","\\frac{2}{3}"], ans:1 },
-  { topic:"Calculo", q:"\\lim_{x \\to 0} \\frac{\\sin x}{x} =", opts:["0","\\infty","1","\\text{No existe}"], ans:2 },
-  { topic:"Calculo", q:"\\frac{d}{dx}e^x =", opts:["xe^{x-1}","e^x","e","1"], ans:1 },
-  { topic:"Calculo", q:"\\frac{d}{dx}\\ln(x) =", opts:["\\frac{1}{x}","\\frac{\\ln x}{x}","x","\\frac{1}{x^2}"], ans:0 },
-  { topic:"Calculo", q:"\\int \\cos(x)\\,dx =", opts:["-\\sin x+C","\\sin x+C","\\cos x+C","-\\cos x+C"], ans:1 },
-  { topic:"Calculo", q:"\\text{Si } f(x)=x\\sin x,\\text{ entonces } f'(x)=", opts:["\\cos x","\\sin x+x\\cos x","x\\cos x","\\sin x-x\\cos x"], ans:1 },
-  { topic:"Calculo", q:"\\frac{d}{dx}f(g(x)) =", opts:["f'(x)g'(x)","f(g'(x))","f'(g(x))\\cdot g'(x)","f'(g(x))+g'(x)"], ans:2 },
-  { topic:"Calculo", q:"\\int \\frac{1}{x}\\,dx =", opts:["x+C","\\ln|x|+C","\\frac{1}{x^2}+C","-\\frac{1}{x^2}+C"], ans:1 },
-  { topic:"Calculo", q:"\\frac{d}{dx}\\tan(x) =", opts:["\\sec^2 x","\\cos^2 x","-\\sec^2 x","\\cot x"], ans:0 },
-  { topic:"Calculo", q:"\\frac{d}{dx}(x^2 e^x) =", opts:["2xe^x","x^2e^x","(2x+x^2)e^x","2x+e^x"], ans:2 },
-  { topic:"Calculo", q:"\\int e^x\\,dx =", opts:["e^x+C","xe^x+C","e^{x+1}+C","\\frac{e^x}{x}+C"], ans:0 },
-  { topic:"EDO", q:"\\text{Solucion general de } y' = y", opts:["y=Cx","y=Ce^x","y=C+e^x","y=\\ln x+C"], ans:1 },
-  { topic:"EDO", q:"\\text{Tipo de EDO: } y''+4y=0", opts:["\\text{No lineal ord.1}","\\text{Lineal ord.2 hom.}","\\text{Lineal ord.1}","\\text{Bernoulli}"], ans:1 },
-  { topic:"EDO", q:"y'+y=0,\\; y(0)=2 \\Rightarrow y=", opts:["2e^{-x}","2e^x","e^{-x}+1","2x+2"], ans:0 },
-  { topic:"EDO", q:"\\text{Factor integrante de } y'+P(x)y=Q(x)", opts:["e^{P(x)}","e^{\\int P(x)dx}","\\int P(x)dx","\\frac{1}{P(x)}"], ans:1 },
-  { topic:"EDO", q:"\\text{Raices de } y''-y=0", opts:["r=\\pm i","r=0,1","r=\\pm 1","r=1\\text{ doble}"], ans:2 },
-  { topic:"EDO", q:"\\text{Metodo numerico para } y'=f(x,y)", opts:["\\text{Sep. variables}","\\text{Euler}","\\text{Factor integrante}","\\text{Var. parametros}"], ans:1 },
-  { topic:"EDO", q:"\\text{Polinomio caract. de } y''+2y'+y=0", opts:["r^2+2r+1=0","r^2-2r+1=0","r^2+2=0","r+1=0"], ans:0 },
-  { topic:"EDO", q:"\\text{EDO separable tiene la forma:}", opts:["y''=f(x,y)","y'=f(x)g(y)","y'+P(x)y=0","y''+P(x)y=Q(x)"], ans:1 },
+// =====================================================================
+// PREGUNTAS
+// =====================================================================
+const QS = [
+  {t:"Calculo",q:"\\frac{d}{dx}(x^3+2x)=",opts:["3x^2+2","3x^2+2x","x^2+2","3x+2"],ans:0},
+  {t:"Calculo",q:"\\int_0^1 x^2\\,dx=",opts:["\\tfrac{1}{2}","\\tfrac{1}{3}","\\tfrac{1}{4}","\\tfrac{2}{3}"],ans:1},
+  {t:"Calculo",q:"\\lim_{x\\to0}\\frac{\\sin x}{x}=",opts:["0","\\infty","1","\\nexists"],ans:2},
+  {t:"Calculo",q:"\\frac{d}{dx}e^x=",opts:["xe^{x-1}","e^x","e","1"],ans:1},
+  {t:"Calculo",q:"\\frac{d}{dx}\\ln x=",opts:["\\tfrac{1}{x}","\\tfrac{\\ln x}{x}","x","\\tfrac{1}{x^2}"],ans:0},
+  {t:"Calculo",q:"\\int\\cos x\\,dx=",opts:["-\\sin x+C","\\sin x+C","\\cos x+C","-\\cos x+C"],ans:1},
+  {t:"Calculo",q:"\\frac{d}{dx}(x\\sin x)=",opts:["\\cos x","\\sin x+x\\cos x","x\\cos x","\\sin x-x\\cos x"],ans:1},
+  {t:"Calculo",q:"\\frac{d}{dx}f(g(x))=",opts:["f'g'","f(g')","f'(g)\\cdot g'","f'(g)+g'"],ans:2},
+  {t:"Calculo",q:"\\int\\tfrac{1}{x}\\,dx=",opts:["x+C","\\ln|x|+C","\\tfrac{1}{x^2}+C","-\\tfrac{1}{x^2}+C"],ans:1},
+  {t:"Calculo",q:"\\frac{d}{dx}\\tan x=",opts:["\\sec^2 x","\\cos^2 x","-\\sec^2 x","\\cot x"],ans:0},
+  {t:"Calculo",q:"\\frac{d}{dx}(x^2 e^x)=",opts:["2xe^x","x^2e^x","(2x+x^2)e^x","2x+e^x"],ans:2},
+  {t:"Calculo",q:"\\int e^x\\,dx=",opts:["e^x+C","xe^x+C","e^{x+1}+C","\\tfrac{e^x}{x}+C"],ans:0},
+  {t:"Calculo",q:"\\frac{d}{dx}\\sin x=",opts:["\\cos x","-\\cos x","\\sin x","-\\sin x"],ans:0},
+  {t:"Calculo",q:"\\int\\sin x\\,dx=",opts:["\\cos x+C","-\\cos x+C","\\sin x+C","-\\sin x+C"],ans:1},
+  {t:"EDO",q:"\\text{Sol. general de }y'=y",opts:["y=Cx","y=Ce^x","y=C+e^x","y=\\ln x+C"],ans:1},
+  {t:"EDO",q:"y''+4y=0\\text{ es de tipo:}",opts:["\\text{No lineal}","\\text{Lin. 2 hom.}","\\text{Lin. 1}","\\text{Bernoulli}"],ans:1},
+  {t:"EDO",q:"y'+y=0,\\;y(0)=2\\Rightarrow",opts:["2e^{-x}","2e^x","e^{-x}+1","2x+2"],ans:0},
+  {t:"EDO",q:"\\text{Factor integrante de }y'+P(x)y=Q",opts:["e^{P}","e^{\\int P\\,dx}","\\int P\\,dx","\\tfrac{1}{P}"],ans:1},
+  {t:"EDO",q:"\\text{Raices de }y''-y=0",opts:["\\pm i","0,1","\\pm 1","1\\text{ doble}"],ans:2},
+  {t:"EDO",q:"\\text{Metodo numerico para }y'=f(x,y)",opts:["\\text{Sep. var.}","\\text{Euler}","\\text{F. integrante}","\\text{Var. param.}"],ans:1},
+  {t:"EDO",q:"\\text{Pol. caract. de }y''+2y'+y=0",opts:["r^2+2r+1","r^2-2r+1","r^2+2","r+1"],ans:0},
+  {t:"EDO",q:"\\text{EDO separable:}",opts:["y''=f(x,y)","y'=f(x)g(y)","y'+Py=0","y''+Py=Q"],ans:1},
+  {t:"Calculo",q:"\\frac{d^2}{dx^2}x^4=",opts:["4x^3","12x^2","24x","6x^2"],ans:1},
+  {t:"Calculo",q:"\\int_0^\\pi\\sin x\\,dx=",opts:["0","1","2","\\pi"],ans:2},
 ];
 
-const MAX_HP = 50;
-const DMG_CORRECT = 10;
-const DMG_WRONG = 5;
+// =====================================================================
+// CARTAS
+// =====================================================================
+const CARD_TYPES = [
+  {type:"normal",label:"Normal",dmg:15,color:"card-normal"},
+  {type:"strong",label:"Fuerte",dmg:20,color:"card-strong"},
+  {type:"legend",label:"Legendaria",dmg:30,color:"card-legend"},
+];
+const SPECIAL_CARDS = [
+  {type:"special",id:"shield",label:"Especial",name:"Teorema Escudo",desc:"Bloquea el proximo ataque",icon:"🛡",dmg:0,color:"card-special"},
+  {type:"special",id:"vampire",label:"Especial",name:"Integral Vampiro",desc:"Roba 20 HP al oponente",icon:"🧛",dmg:0,color:"card-special"},
+  {type:"special",id:"thief",label:"Especial",name:"Derivada Ladrona",desc:"Roba una carta aleatoria al oponente",icon:"🃏",dmg:0,color:"card-special"},
+  {type:"special",id:"fourier",label:"Especial",name:"Transformada Lineal",desc:"Intercambia toda tu mano con el oponente",icon:"🔄",dmg:0,color:"card-special"},
+];
 
-let myName="", myRole="", myAvatar="warrior", roomCode="", roomRef=null;
-let timerInterval=null, timeLeft=30, answered=false;
-let currentConfig={numQ:10,timeLimit:30};
-let currentNames={host:"",guest:""};
-let currentAvatars={host:"warrior",guest:"robot"};
-let lastQIdx=-1, gameUnsub=null, statusUnsub=null, guestUnsub=null;
+const MAX_HP = 100;
 
-function showScreen(id){
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
-function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
-function genCode(){
-  const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let s="";for(let i=0;i<4;i++) s+=c[Math.floor(Math.random()*c.length)];
-  return s;
-}
-function setLog(msg){ document.getElementById("home-log").textContent=msg; }
-
-function renderKatex(el, tex){
-  try {
-    katex.render(tex, el, { throwOnError:false, displayMode:false });
-  } catch(e){
-    el.textContent = tex;
-  }
-}
-
-function renderHP(idx, hp){
-  const pct = Math.max(0,(hp/MAX_HP)*100);
-  const bar = document.getElementById("hp-bar-p"+(idx+1));
-  const txt = document.getElementById("hp-text-p"+(idx+1));
-  bar.style.width = pct+"%";
-  bar.style.background = pct>60?"#2ecc71":pct>30?"#f39c12":"#e74c3c";
-  txt.textContent = Math.max(0,hp)+" / "+MAX_HP;
-}
-
-function showDamage(idx, amount, isHeal){
-  const el = document.getElementById("dmg-p"+(idx+1));
-  el.textContent = (isHeal?"+":"-")+Math.abs(amount);
-  el.style.color = isHeal?"#2ecc71":"#e74c3c";
-  el.classList.remove("show-dmg","show-heal");
-  void el.offsetWidth;
-  el.classList.add(isHeal?"show-heal":"show-dmg");
-}
-
-function animateFighter(idx, type){
-  const el = document.getElementById("fighter-p"+(idx+1));
-  el.classList.remove("taking-hit","attacking");
-  void el.offsetWidth;
-  el.classList.add(type);
-  setTimeout(()=>el.classList.remove(type), 500);
-}
-
-// ---- Conectar botones ----
-document.getElementById("btn-create").addEventListener("click", createRoom);
-document.getElementById("btn-join").addEventListener("click", joinRoom);
-document.getElementById("btn-start").addEventListener("click", hostStartGame);
-document.getElementById("btn-cancel").addEventListener("click", leaveRoom);
-document.getElementById("btn-leave-guest").addEventListener("click", leaveRoom);
-document.getElementById("btn-home").addEventListener("click", goHome);
-
-async function createRoom(){
-  myName=document.getElementById("home-name").value.trim();
-  myAvatar=document.getElementById("home-avatar").value;
-  if(!myName){setLog("Escribe tu nombre primero");return;}
-  myRole="host";
-  roomCode=genCode();
-  roomRef=ref(db,"rooms/"+roomCode);
-  await set(roomRef,{
-    host:myName, hostAvatar:myAvatar,
-    guest:"", guestAvatar:"",
-    status:"waiting",
-    config:{numQ:10,timeLimit:30},
-    game:null
+function makeHand(qs){
+  const shuffled = [...qs].sort(()=>Math.random()-.5);
+  const sp = SPECIAL_CARDS[Math.floor(Math.random()*SPECIAL_CARDS.length)];
+  const dist = [0,0,0,1,1,2]; // 3 normal,2 fuerte,1 legend
+  const cards = dist.map((ti,i)=>{
+    const ct = CARD_TYPES[ti];
+    return {id:"c"+i, type:ct.type, label:ct.label, dmg:ct.dmg, color:ct.color,
+            q:shuffled[i], used:false};
   });
-  document.getElementById("lobby-code").textContent=roomCode;
-  showScreen("screen-lobby");
+  const spCard = {...sp, id:"cs", q:null, used:false};
+  const all = [...cards, spCard].sort(()=>Math.random()-.5);
+  return all;
+}
 
+function makeHiddenDeck(qs){
+  const sh = [...qs].sort(()=>Math.random()-.5);
+  return sh.slice(0,8).map((q,i)=>{
+    const ti = Math.floor(Math.random()*3);
+    const ct = CARD_TYPES[ti];
+    return {id:"h"+i, type:ct.type, label:ct.label, dmg:ct.dmg, color:ct.color,
+            q, used:false};
+  });
+}
+
+// =====================================================================
+// ESTADO
+// =====================================================================
+let myName="",myRole="",myAv="warrior",roomCode="",roomRef=null;
+let timerInt=null,timeLeft=30,answered=false;
+let cNames={host:"",guest:""},cAv={host:"warrior",guest:"robot"};
+let gameUnsub=null,statusUnsub=null,guestUnsub=null;
+let myChoice=""; // cara/sello
+let selectedCardId = null;
+
+function ss(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");}
+function rk(el,tex){try{katex.render(tex,el,{throwOnError:false,displayMode:false});}catch(e){el.textContent=tex;}}
+function sl(m){document.getElementById("h-log").textContent=m;}
+function genCode(){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<4;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
+function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
+
+function renderHP(idx,hp){
+  const pct=Math.max(0,(hp/MAX_HP)*100);
+  const b=document.getElementById("hp-p"+(idx+1));
+  const t=document.getElementById("ht-p"+(idx+1));
+  b.style.width=pct+"%";
+  b.style.background=pct>60?"#10b981":pct>30?"#f59e0b":"#f87171";
+  t.textContent=Math.max(0,hp)+"/"+MAX_HP;
+}
+function popDmg(idx,txt,color){
+  const el=document.getElementById("dp-p"+(idx+1));
+  el.textContent=txt;el.style.color=color;
+  el.classList.remove("show");void el.offsetWidth;el.classList.add("show");
+}
+function animF(idx,cls){
+  const el=document.getElementById("f-p"+(idx+1));
+  el.classList.remove("hit","atk");void el.offsetWidth;el.classList.add(cls);
+  setTimeout(()=>el.classList.remove(cls),500);
+}
+function setShield(idx,on){
+  document.getElementById("shield-p"+(idx+1)).classList.toggle("on",on);
+}
+function openModal(id){document.getElementById(id).classList.add("open");}
+function closeModal(id){document.getElementById(id).classList.remove("open");}
+
+// =====================================================================
+// BOTONES
+// =====================================================================
+document.getElementById("btn-create").addEventListener("click",createRoom);
+document.getElementById("btn-join").addEventListener("click",joinRoom);
+document.getElementById("btn-start").addEventListener("click",hostStart);
+document.getElementById("btn-cancel").addEventListener("click",leaveRoom);
+document.getElementById("btn-gleave").addEventListener("click",leaveRoom);
+document.getElementById("btn-home").addEventListener("click",goHome);
+document.getElementById("btn-cara").addEventListener("click",()=>pickCoin("cara"));
+document.getElementById("btn-sello").addEventListener("click",()=>pickCoin("sello"));
+document.getElementById("btn-sp-ok").addEventListener("click",()=>{
+  closeModal("modal-special");
+  // Despues de cerrar modal especial, pasar turno
+  const gameRefLocal = ref(db,"rooms/"+roomCode+"/game");
+  get(gameRefLocal).then(snap=>{
+    const g=snap.val();if(!g)return;
+    update(gameRefLocal,{phase:"select",turn:g.turn===0?1:0,ts:Date.now()});
+  });
+});
+
+// =====================================================================
+// CREAR / UNIRSE
+// =====================================================================
+async function createRoom(){
+  myName=document.getElementById("h-name").value.trim();
+  myAv=document.getElementById("h-avatar").value;
+  if(!myName){sl("Escribe tu nombre");return;}
+  myRole="host";roomCode=genCode();
+  roomRef=ref(db,"rooms/"+roomCode);
+  await set(roomRef,{host:myName,hostAv:myAv,guest:"",guestAv:"",status:"waiting",game:null});
+  document.getElementById("l-code").textContent=roomCode;
+  ss("s-lobby");
   guestUnsub=onValue(ref(db,"rooms/"+roomCode+"/guest"),snap=>{
     const g=snap.val();
-    if(g){
-      document.getElementById("lobby-status-title").textContent=g+" se unio!";
-      document.getElementById("lobby-status-sub").textContent="Ya puedes iniciar el combate";
-      document.getElementById("btn-start").style.display="block";
-    } else {
-      document.getElementById("lobby-status-title").innerHTML="Esperando oponente<span class='dot-anim'></span>";
-      document.getElementById("lobby-status-sub").textContent="Nadie conectado aun";
-      document.getElementById("btn-start").style.display="none";
-    }
+    if(g){document.getElementById("l-title").textContent=g+" se unio!";document.getElementById("l-sub").textContent="Ya puedes iniciar";document.getElementById("btn-start").style.display="block";}
+    else{document.getElementById("l-title").innerHTML="Esperando oponente<span class='dot'></span>";document.getElementById("l-sub").textContent="Nadie conectado aun";document.getElementById("btn-start").style.display="none";}
   });
-
-  statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
-    if(snap.val()==="playing") initGame();
-  });
+  statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{if(snap.val()==="coin")initGame();});
 }
 
 async function joinRoom(){
-  myName=document.getElementById("home-name").value.trim();
-  myAvatar=document.getElementById("home-avatar").value;
-  const code=document.getElementById("join-code").value.trim().toUpperCase();
-  if(!myName){setLog("Escribe tu nombre primero");return;}
-  if(code.length!==4){setLog("El codigo debe tener 4 caracteres");return;}
-  roomCode=code;
-  roomRef=ref(db,"rooms/"+roomCode);
+  myName=document.getElementById("h-name").value.trim();
+  myAv=document.getElementById("h-avatar").value;
+  const code=document.getElementById("h-code").value.trim().toUpperCase();
+  if(!myName){sl("Escribe tu nombre");return;}
+  if(code.length!==4){sl("Codigo de 4 caracteres");return;}
+  roomCode=code;roomRef=ref(db,"rooms/"+roomCode);
   const snap=await get(roomRef);
-  if(!snap.exists()){setLog("Sala no encontrada");return;}
-  const data=snap.val();
-  if(data.status==="playing"){setLog("La sala ya esta en juego");return;}
-  if(data.guest&&data.guest!==""){setLog("La sala ya tiene dos jugadores");return;}
+  if(!snap.exists()){sl("Sala no encontrada");return;}
+  const d=snap.val();
+  if(d.status!=="waiting"){sl("Sala no disponible");return;}
+  if(d.guest&&d.guest!==""){sl("Sala llena");return;}
   myRole="guest";
-  await update(roomRef,{guest:myName, guestAvatar:myAvatar});
-  document.getElementById("guest-lobby-info").textContent="Sala: "+roomCode+" — vs "+data.host;
-  showScreen("screen-guest-lobby");
-
-  statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
-    if(snap.val()==="playing") initGame();
-  });
+  await update(roomRef,{guest:myName,guestAv:myAv});
+  document.getElementById("g-info").textContent="Sala: "+roomCode+" — vs "+d.host;
+  ss("s-guest");
+  statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{if(snap.val()==="coin")initGame();});
 }
 
-async function hostStartGame(){
-  const numQ=parseInt(document.getElementById("lobby-numq").value);
-  const timeLimit=parseInt(document.getElementById("lobby-time").value);
-  const qList=shuffle(QUESTIONS).slice(0,numQ);
+async function hostStart(){
+  const snap=await get(roomRef);const d=snap.val();
+  const h1=makeHand(QS),h2=makeHand(QS),hd=makeHiddenDeck(QS);
   await update(roomRef,{
-    status:"playing",
-    config:{numQ,timeLimit},
+    status:"coin",
     game:{
-      qList:qList, qIdx:0, turn:0,
-      scores:[0,0], hp:[MAX_HP,MAX_HP],
-      phase:"question", ts:Date.now()
+      hp:[MAX_HP,MAX_HP],
+      hands:[h1,h2],
+      hiddenDeck:hd,
+      hiddenIdx:0,
+      shields:[false,false],
+      turn:0,
+      phase:"coin",
+      coinResult:"",
+      hostChoice:"",
+      attackCard:null,
+      rouletteResult:"",
+      ts:Date.now()
     }
   });
 }
 
+// =====================================================================
+// INIT GAME
+// =====================================================================
 async function initGame(){
-  if(gameUnsub) gameUnsub();
+  if(gameUnsub)gameUnsub();
   const snap=await get(ref(db,"rooms/"+roomCode));
-  const data=snap.val();
-  if(!data) return;
-  currentConfig=data.config;
-  currentNames.host=data.host;
-  currentNames.guest=data.guest;
-  currentAvatars.host=data.hostAvatar||"warrior";
-  currentAvatars.guest=data.guestAvatar||"robot";
-
-  // Renderizar avatares
-  document.getElementById("fname-p1").textContent=data.host;
-  document.getElementById("frole-p1").textContent=AVATAR_NAMES[currentAvatars.host]||"";
-  document.getElementById("avatar-p1").innerHTML=AVATARS[currentAvatars.host]||AVATARS.warrior;
-  document.getElementById("fname-p2").textContent=data.guest;
-  document.getElementById("frole-p2").textContent=AVATAR_NAMES[currentAvatars.guest]||"";
-  document.getElementById("avatar-p2").innerHTML=AVATARS[currentAvatars.guest]||AVATARS.robot;
-  renderHP(0, MAX_HP);
-  renderHP(1, MAX_HP);
-
-  lastQIdx=-1;
-  showScreen("screen-game");
+  const d=snap.val();if(!d)return;
+  cNames.host=d.host;cNames.guest=d.guest;
+  cAv.host=d.hostAv||"warrior";cAv.guest=d.guestAv||"robot";
+  document.getElementById("fn-p1").textContent=d.host;
+  document.getElementById("fr-p1").textContent=AVNAMES[cAv.host]||"";
+  document.getElementById("av-p1").innerHTML=AVS[cAv.host]||AVS.warrior;
+  document.getElementById("fn-p2").textContent=d.guest;
+  document.getElementById("fr-p2").textContent=AVNAMES[cAv.guest]||"";
+  document.getElementById("av-p2").innerHTML=AVS[cAv.guest]||AVS.robot;
+  renderHP(0,MAX_HP);renderHP(1,MAX_HP);
+  ss("s-game");
 
   gameUnsub=onValue(ref(db,"rooms/"+roomCode+"/game"),snap=>{
-    const g=snap.val();
-    if(!g) return;
-    // Actualizar HP siempre
-    if(g.hp){
-      renderHP(0, g.hp[0]);
-      renderHP(1, g.hp[1]);
-    }
-    if(g.phase==="finished"){showResult(g);return;}
-    if(g.phase==="question"&&g.qIdx!==lastQIdx){
-      lastQIdx=g.qIdx;
-      renderQuestion(g);
-    }
+    const g=snap.val();if(!g)return;
+    syncGameState(g);
   });
 }
 
-function renderQuestion(g){
-  clearInterval(timerInterval);
-  answered=false;
-  const q=g.qList[g.qIdx];
-  const names=[currentNames.host,currentNames.guest];
-  const isMyTurn=(myRole==="host"&&g.turn===0)||(myRole==="guest"&&g.turn===1);
+// =====================================================================
+// SINCRONIZAR ESTADO
+// =====================================================================
+function syncGameState(g){
+  renderHP(0,g.hp[0]);renderHP(1,g.hp[1]);
+  setShield(0,g.shields[0]);setShield(1,g.shields[1]);
 
-  document.getElementById("turn-name").textContent=names[g.turn];
-  document.getElementById("fighter-p1").classList.toggle("active-turn", g.turn===0);
-  document.getElementById("fighter-p2").classList.toggle("active-turn", g.turn===1);
-  document.getElementById("progress-txt").textContent="Pregunta "+(g.qIdx+1)+" de "+g.qList.length;
-  document.getElementById("q-badge").innerHTML='<span class="badge badge-'+(q.topic==="Calculo"?"calc":"ode")+'">'+q.topic+'</span>';
+  const myIdx = myRole==="host"?0:1;
+  const oppIdx = 1-myIdx;
+  const isMyTurn = g.turn===myIdx;
 
-  // Renderizar pregunta con KaTeX
-  const qEl = document.getElementById("q-text");
-  qEl.innerHTML="";
-  renderKatex(qEl, q.q);
+  // Actualizar mi mano
+  renderMyHand(g.hands[myIdx], g.phase, isMyTurn);
 
-  document.getElementById("status-msg").textContent="";
-  document.getElementById("status-msg").className="status";
-  document.getElementById("game-info").textContent=isMyTurn?"Es tu turno — ataca!":"Esperando al oponente...";
+  // Turn label
+  const turnNames=[cNames.host,cNames.guest];
+  document.getElementById("turn-name").textContent=turnNames[g.turn];
 
-  const opts=document.getElementById("options");
-  opts.innerHTML="";
-  q.opts.forEach((o,i)=>{
-    const btn=document.createElement("button");
-    btn.className="opt-btn";
-    // Renderizar opciones con KaTeX
-    const span=document.createElement("span");
-    try { katex.render(o, span, {throwOnError:false, displayMode:false}); }
-    catch(e){ span.textContent=o; }
-    btn.appendChild(span);
-    btn.disabled=!isMyTurn;
-    if(isMyTurn) btn.addEventListener("click",()=>submitAnswer(i,g));
-    opts.appendChild(btn);
-  });
+  if(g.phase==="coin"){
+    showCoinModal(g,myIdx);
+    return;
+  }
+  if(g.phase==="roulette"){
+    showRouletteModal(g,myIdx,oppIdx);
+    return;
+  }
+  if(g.phase==="special_effect"){
+    applySpecialEffect(g,myIdx,oppIdx);
+    return;
+  }
 
-  if(isMyTurn){
-    timeLeft=currentConfig.timeLimit;
-    updateBar(currentConfig.timeLimit);
-    timerInterval=setInterval(()=>{
-      timeLeft--;
-      updateBar(currentConfig.timeLimit);
-      if(timeLeft<=0){clearInterval(timerInterval);if(!answered)submitAnswer(-1,g);}
-    },1000);
-  } else {
-    document.getElementById("timer-bar").style.width="100%";
-    document.getElementById("timer-bar").style.background="#7c6af7";
+  closeModal("modal-coin");
+  closeModal("modal-roulette");
+
+  if(g.phase==="select"){
+    document.getElementById("phase-label").textContent=isMyTurn?"Elige una carta para atacar":"Esperando al oponente...";
+    document.getElementById("atk-display").style.display="none";
+    document.getElementById("q-card").style.display="none";
+    document.getElementById("timer-wrap").style.display="none";
+    document.getElementById("g-action-info").textContent=isMyTurn?"Haz clic en una carta de tu mano":"El oponente esta eligiendo...";
+    document.getElementById("status-msg").textContent="";
+  }
+
+  if(g.phase==="answer"){
+    showAnswerPhase(g,myIdx,oppIdx,isMyTurn);
+  }
+
+  if(g.phase==="finished"){
+    showResult(g);
   }
 }
 
-async function submitAnswer(idx,g){
+// =====================================================================
+// MODAL CARA O SELLO
+// =====================================================================
+function showCoinModal(g,myIdx){
+  openModal("modal-coin");
+  closeModal("modal-roulette");
+  if(g.coinResult){
+    // Ya hay resultado
+    document.getElementById("coin-btns").style.display="none";
+    const won = (myRole==="host" && g.coinResult===g.hostChoice) || (myRole==="guest" && g.coinResult!==g.hostChoice);
+    document.getElementById("coin-result").textContent = g.coinResult.toUpperCase()+" — "+(won?"Tu inicias!":"El oponente inicia!");
+    document.getElementById("coin-title").textContent="Resultado";
+    document.getElementById("coin-sub").textContent="La moneda cayo en...";
+    // Animar moneda
+    const coinEl=document.getElementById("coin-el");
+    coinEl.classList.add("spin");
+    setTimeout(()=>{
+      coinEl.style.transform=g.coinResult==="cara"?"rotateY(0)":"rotateY(180deg)";
+      // Despues de ver resultado, si soy host arranco la partida
+      if(myRole==="host"){
+        setTimeout(async()=>{
+          closeModal("modal-coin");
+          const starter = g.coinResult===g.hostChoice?0:1;
+          await update(ref(db,"rooms/"+roomCode+"/game"),{phase:"select",turn:starter,ts:Date.now()});
+        },2500);
+      } else {
+        setTimeout(()=>closeModal("modal-coin"),2500);
+      }
+    },2100);
+    return;
+  }
+  // Host elige
+  if(myRole==="host" && !g.hostChoice){
+    document.getElementById("coin-title").textContent="Tu eliges — Cara o Sello?";
+    document.getElementById("coin-sub").textContent="El resultado decidira quien inicia";
+    document.getElementById("coin-btns").style.display="block";
+    document.getElementById("coin-result").textContent="";
+  } else if(myRole==="guest"){
+    document.getElementById("coin-title").textContent="Esperando al anfitrion";
+    document.getElementById("coin-sub").textContent="El anfitrion esta eligiendo cara o sello...";
+    document.getElementById("coin-btns").style.display="none";
+    document.getElementById("coin-result").textContent="";
+  } else {
+    // Host ya eligio, esperando resultado
+    document.getElementById("coin-btns").style.display="none";
+  }
+}
+
+async function pickCoin(choice){
+  myChoice=choice;
+  document.getElementById("coin-btns").style.display="none";
+  document.getElementById("coin-result").textContent="Girando la moneda...";
+  const result=Math.random()<.5?"cara":"sello";
+  await update(ref(db,"rooms/"+roomCode+"/game"),{hostChoice:choice,coinResult:result,ts:Date.now()});
+}
+
+// =====================================================================
+// MI MANO
+// =====================================================================
+function renderMyHand(hand, phase, isMyTurn){
+  const container=document.getElementById("my-hand");
+  container.innerHTML="";
+  document.getElementById("hand-title").textContent="Tu mano ("+hand.filter(c=>!c.used).length+" cartas)";
+  hand.forEach(card=>{
+    const div=document.createElement("div");
+    div.className="card-item "+card.color+(card.used?" used":"");
+    if(!card.used && isMyTurn && phase==="select") div.classList.add("");
+    div.innerHTML=`
+      <div class="card-level">${card.label}</div>
+      <div class="card-name">${card.name||card.q?.t||""}</div>
+      <div class="card-dmg">${card.type==="special"?card.icon||"✨":(card.dmg+"dmg")}</div>`;
+    if(!card.used && isMyTurn && phase==="select"){
+      div.addEventListener("click",()=>selectCard(card));
+    } else {
+      div.classList.add("disabled");
+    }
+    container.appendChild(div);
+  });
+}
+
+async function selectCard(card){
+  if(!card||card.used)return;
+  const snap=await get(ref(db,"rooms/"+roomCode+"/game"));
+  const g=snap.val();if(!g)return;
+  const myIdx=myRole==="host"?0:1;
+
+  // Marcar carta como usada
+  const newHands=JSON.parse(JSON.stringify(g.hands));
+  const cardIdx=newHands[myIdx].findIndex(c=>c.id===card.id);
+  if(cardIdx===-1)return;
+  newHands[myIdx][cardIdx].used=true;
+
+  if(card.type==="special"){
+    // Aplicar efecto inmediato
+    await update(ref(db,"rooms/"+roomCode+"/game"),{
+      hands:newHands,
+      phase:"special_effect",
+      attackCard:card,
+      specialBy:myIdx,
+      ts:Date.now()
+    });
+  } else {
+    // Carta de ataque — pasar a fase de respuesta
+    await update(ref(db,"rooms/"+roomCode+"/game"),{
+      hands:newHands,
+      phase:"answer",
+      attackCard:card,
+      ts:Date.now()
+    });
+  }
+}
+
+// =====================================================================
+// EFECTOS ESPECIALES
+// =====================================================================
+async function applySpecialEffect(g,myIdx,oppIdx){
+  const card=g.attackCard;
+  if(!card)return;
+  const by=g.specialBy;
+  // Solo el que la jugo aplica el efecto en Firebase
+  if(by!==myIdx){
+    // El otro jugador solo ve el modal
+    openModal("modal-special");
+    document.getElementById("sp-icon").textContent=card.icon||"✨";
+    document.getElementById("sp-title").textContent=card.name;
+    document.getElementById("sp-desc").textContent="El oponente uso: "+card.desc;
+    document.getElementById("btn-sp-ok").style.display="none";
+    return;
+  }
+  openModal("modal-special");
+  document.getElementById("sp-icon").textContent=card.icon||"✨";
+  document.getElementById("sp-title").textContent=card.name;
+  document.getElementById("btn-sp-ok").style.display="block";
+
+  const newHP=[...g.hp];
+  const newShields=[...g.shields];
+  const newHands=JSON.parse(JSON.stringify(g.hands));
+
+  if(card.id==="shield"){
+    newShields[by]=true;
+    document.getElementById("sp-desc").textContent="Tu proximo ataque sera bloqueado!";
+    await update(ref(db,"rooms/"+roomCode+"/game"),{hp:newHP,shields:newShields,hands:newHands,ts:Date.now()});
+  } else if(card.id==="vampire"){
+    const steal=Math.min(20,newHP[oppIdx]);
+    newHP[oppIdx]=Math.max(0,newHP[oppIdx]-steal);
+    newHP[by]=Math.min(MAX_HP,newHP[by]+steal);
+    document.getElementById("sp-desc").textContent="Robas "+steal+" HP al oponente!";
+    await update(ref(db,"rooms/"+roomCode+"/game"),{hp:newHP,shields:newShields,hands:newHands,ts:Date.now()});
+  } else if(card.id==="thief"){
+    const oppAvail=newHands[oppIdx].filter(c=>!c.used);
+    if(oppAvail.length>0){
+      const stolen=oppAvail[Math.floor(Math.random()*oppAvail.length)];
+      const si=newHands[oppIdx].findIndex(c=>c.id===stolen.id);
+      newHands[oppIdx][si].used=true;
+      const newCard={...stolen,id:"stolen"+Date.now(),used:false};
+      newHands[by].push(newCard);
+      document.getElementById("sp-desc").textContent="Robas una carta al oponente!";
+    } else {
+      document.getElementById("sp-desc").textContent="El oponente no tiene cartas disponibles!";
+    }
+    await update(ref(db,"rooms/"+roomCode+"/game"),{hp:newHP,shields:newShields,hands:newHands,ts:Date.now()});
+  } else if(card.id==="fourier"){
+    const tmp=newHands[by].filter(c=>!c.used);
+    const oppA=newHands[oppIdx].filter(c=>!c.used);
+    // Intercambiar disponibles
+    const usedBy=newHands[by].filter(c=>c.used);
+    const usedOpp=newHands[oppIdx].filter(c=>c.used);
+    newHands[by]=[...usedBy,...oppA];
+    newHands[oppIdx]=[...usedOpp,...tmp];
+    document.getElementById("sp-desc").textContent="Todas las cartas fueron intercambiadas!";
+    await update(ref(db,"rooms/"+roomCode+"/game"),{hp:newHP,shields:newShields,hands:newHands,ts:Date.now()});
+  }
+
+  // Verificar fin por HP
+  if(newHP[0]<=0||newHP[1]<=0){
+    await update(ref(db,"rooms/"+roomCode+"/game"),{phase:"finished"});
+  }
+}
+
+// =====================================================================
+// FASE RESPUESTA
+// =====================================================================
+function showAnswerPhase(g,myIdx,oppIdx,isMyTurn){
+  const card=g.attackCard;
+  if(!card)return;
+
+  // Mostrar carta atacante
+  document.getElementById("atk-display").style.display="block";
+  document.getElementById("acd-level").textContent=card.label;
+  document.getElementById("acd-name").textContent=card.name||"Carta de ataque";
+  document.getElementById("acd-dmg").textContent=card.dmg+" DMG";
+
+  if(isMyTurn){
+    // Soy el atacante — espero
+    document.getElementById("q-card").style.display="none";
+    document.getElementById("phase-label").textContent="Esperando respuesta del oponente...";
+    document.getElementById("g-action-info").textContent="Tu carta esta en juego. El oponente esta respondiendo.";
+    document.getElementById("timer-wrap").style.display="none";
+  } else {
+    // Soy el defensor — respondo
+    const q=card.q;
+    if(!q)return;
+    document.getElementById("phase-label").textContent="Responde la pregunta del oponente!";
+    document.getElementById("q-card").style.display="block";
+    document.getElementById("q-badge-el").innerHTML='<span class="qbadge '+(q.t==="Calculo"?"qbadge-c":"qbadge-e")+'">'+q.t+'</span>';
+    const qEl=document.getElementById("q-text");qEl.innerHTML="";rk(qEl,q.q);
+    const optsEl=document.getElementById("q-opts");optsEl.innerHTML="";
+    q.opts.forEach((o,i)=>{
+      const btn=document.createElement("button");
+      btn.className="opt";
+      const sp=document.createElement("span");
+      try{katex.render(o,sp,{throwOnError:false,displayMode:false});}catch(e){sp.textContent=o;}
+      btn.appendChild(sp);
+      btn.addEventListener("click",()=>submitAnswer(i,g,myIdx,oppIdx));
+      optsEl.appendChild(btn);
+    });
+    document.getElementById("g-action-info").textContent="Tiempo limitado para responder!";
+    document.getElementById("status-msg").textContent="";
+
+    // Timer
+    clearInterval(timerInt);
+    answered=false;
+    timeLeft=30;
+    document.getElementById("timer-wrap").style.display="block";
+    updateTimerBar(30);
+    timerInt=setInterval(()=>{
+      timeLeft--;updateTimerBar(30);
+      if(timeLeft<=0){clearInterval(timerInt);if(!answered)submitAnswer(-1,g,myIdx,oppIdx);}
+    },1000);
+  }
+}
+
+async function submitAnswer(idx,g,myIdx,oppIdx){
   if(answered)return;
-  answered=true;
-  clearInterval(timerInterval);
-
-  const q=g.qList[g.qIdx];
+  answered=true;clearInterval(timerInt);
+  const card=g.attackCard;
+  const q=card.q;
   const correct=idx===q.ans;
-  const attacker=g.turn;        // quien responde
-  const defender=g.turn===0?1:0; // quien recibe daño si correcto
-
-  const btns=document.querySelectorAll(".opt-btn");
+  const btns=document.querySelectorAll(".opt");
   btns.forEach(b=>b.disabled=true);
   if(idx>=0)btns[idx].classList.add(correct?"correct":"wrong");
   btns[q.ans].classList.add("correct");
 
   const status=document.getElementById("status-msg");
-  const newHP=[...g.hp];
-  const newScores=[g.scores[0],g.scores[1]];
-
   if(correct){
-    // Ataque al oponente
-    newHP[defender]=Math.max(0, newHP[defender]-DMG_CORRECT);
-    newScores[attacker]++;
-    animateFighter(attacker,"attacking");
-    setTimeout(()=>animateFighter(defender,"taking-hit"),300);
-    showDamage(defender, DMG_CORRECT, false);
-    status.textContent="Correcto! Atacas al oponente (-"+DMG_CORRECT+" HP)";
-    status.className="status correct";
-  } else {
-    // Daño a uno mismo
-    newHP[attacker]=Math.max(0, newHP[attacker]-DMG_WRONG);
-    animateFighter(attacker,"taking-hit");
-    showDamage(attacker, DMG_WRONG, false);
-    if(idx===-1){
-      status.textContent="Tiempo! Pierdes -"+DMG_WRONG+" HP";
-    } else {
-      status.textContent="Incorrecto! Pierdes -"+DMG_WRONG+" HP";
-    }
-    status.className="status wrong";
-  }
-
-  const nextIdx=g.qIdx+1;
-  const someoneDown=newHP[0]<=0||newHP[1]<=0;
-  const finished=nextIdx>=g.qList.length||someoneDown;
-
-  setTimeout(async()=>{
+    status.textContent="Correcto! Girando la ruleta del destino...";
+    status.className="status-msg ok";
+    // Ir a ruleta
+    const roulIdx=Math.floor(Math.random()*3); // 0=sin daño,1=mitad,2=rebota
     await update(ref(db,"rooms/"+roomCode+"/game"),{
-      scores:newScores,
-      hp:newHP,
-      qIdx:nextIdx,
-      turn:g.turn===0?1:0,
-      phase:finished?"finished":"question",
+      phase:"roulette",
+      rouletteResult:roulIdx,
+      rouletteBy:myIdx,
       ts:Date.now()
     });
-  },1800);
+  } else {
+    status.textContent=idx===-1?"Tiempo! Recibes todo el daño!":"Incorrecto! Recibes todo el daño!";
+    status.className="status-msg bad";
+    // Recibo todo el daño
+    setTimeout(async()=>{
+      await applyDamage(g,myIdx,oppIdx,card.dmg,"full");
+    },1200);
+  }
 }
 
-function updateBar(total){
+// =====================================================================
+// RULETA
+// =====================================================================
+function showRouletteModal(g,myIdx,oppIdx){
+  openModal("modal-roulette");
+  const ri=g.rouletteResult;
+  const needle=document.getElementById("roulette-needle");
+  const spinRes=document.getElementById("spin-result");
+  const spinOut=document.getElementById("spin-outcome");
+  // Animar aguja
+  const angles=[60,180,300]; // apunta a seg verde,amarillo,rojo
+  needle.style.transition="none";
+  needle.style.transform="rotate(0deg)";
+  setTimeout(()=>{
+    needle.style.transition="transform 2s cubic-bezier(.17,.67,.12,.99)";
+    needle.style.transform="rotate("+(720+angles[ri])+"deg)";
+  },100);
+  spinRes.textContent="";spinOut.textContent="";
+  setTimeout(async()=>{
+    if(ri===0){spinRes.textContent="🟢 Sin daño!";spinOut.textContent="El ataque fallo!";}
+    else if(ri===1){spinRes.textContent="🟡 Mitad del daño";spinOut.textContent="Recibes la mitad!";}
+    else{spinRes.textContent="🔴 Daño rebota!";spinOut.textContent="El atacante recibe su propio daño!";}
+    const card=g.attackCard;
+    const attacker=g.turn; // quien envio la carta
+    const defender=g.rouletteBy; // quien respondio correcto
+    setTimeout(async()=>{
+      closeModal("modal-roulette");
+      if(ri===0) await applyDamage(g,defender,attacker,card.dmg,"none");
+      else if(ri===1) await applyDamage(g,defender,attacker,card.dmg,"half");
+      else await applyDamage(g,defender,attacker,card.dmg,"rebound");
+    },2200);
+  },2100);
+}
+
+async function applyDamage(g,defenderIdx,attackerIdx,baseDmg,mode){
+  const newHP=[...g.hp];
+  const shields=[...g.shields];
+  let desc="";
+  if(mode==="full"){
+    if(shields[defenderIdx]){shields[defenderIdx]=false;desc="Escudo bloqueado el ataque!";}
+    else{newHP[defenderIdx]=Math.max(0,newHP[defenderIdx]-baseDmg);animF(defenderIdx,"hit");popDmg(defenderIdx,"-"+baseDmg,"#f87171");desc="Recibes "+baseDmg+" HP de daño!";}
+  } else if(mode==="none"){
+    desc="Sin daño — respuesta correcta!";
+  } else if(mode==="half"){
+    const d=Math.ceil(baseDmg/2);
+    if(shields[defenderIdx]){shields[defenderIdx]=false;desc="Escudo bloqueo la mitad!";}
+    else{newHP[defenderIdx]=Math.max(0,newHP[defenderIdx]-d);animF(defenderIdx,"hit");popDmg(defenderIdx,"-"+d,"#f59e0b");desc="Recibes solo "+d+" HP!";}
+  } else if(mode==="rebound"){
+    if(shields[attackerIdx]){shields[attackerIdx]=false;desc="El escudo bloqueo el rebote!";}
+    else{newHP[attackerIdx]=Math.max(0,newHP[attackerIdx]-baseDmg);animF(attackerIdx,"hit");popDmg(attackerIdx,"-"+baseDmg,"#f87171");desc="El daño rebota! "+baseDmg+" HP al atacante!";}
+  }
+  document.getElementById("status-msg").textContent=desc;
+
+  const newTurn=g.turn===0?1:0;
+  const finished=newHP[0]<=0||newHP[1]<=0;
+
+  // Verificar cartas disponibles
+  const snap=await get(ref(db,"rooms/"+roomCode+"/game"));
+  const gFresh=snap.val();
+  let newHands=gFresh?JSON.parse(JSON.stringify(gFresh.hands)):g.hands;
+  let newHiddenIdx=gFresh?gFresh.hiddenIdx:0;
+  const hiddenDeck=gFresh?gFresh.hiddenDeck:[];
+
+  // Si el siguiente jugador no tiene cartas, robar de baraja oculta
+  if(!newHands[newTurn].some(c=>!c.used) && !finished){
+    if(hiddenDeck && newHiddenIdx<hiddenDeck.length){
+      const newCard={...hiddenDeck[newHiddenIdx],id:"hd"+newHiddenIdx,used:false};
+      newHands[newTurn].push(newCard);
+      newHiddenIdx++;
+    }
+  }
+
+  await update(ref(db,"rooms/"+roomCode+"/game"),{
+    hp:newHP,shields,hands:newHands,hiddenIdx:newHiddenIdx,
+    phase:finished?"finished":"select",
+    turn:newTurn,
+    attackCard:null,
+    ts:Date.now()
+  });
+}
+
+// =====================================================================
+// TIMER BAR
+// =====================================================================
+function updateTimerBar(total){
   const pct=Math.max(0,(timeLeft/total)*100);
-  const bar=document.getElementById("timer-bar");
-  bar.style.width=pct+"%";
-  bar.style.background=pct>50?"#7c6af7":pct>25?"#f39c12":"#e74c3c";
+  const b=document.getElementById("timer-fill");
+  b.style.width=pct+"%";
+  b.style.background=pct>50?"#a78bfa":pct>25?"#f59e0b":"#f87171";
 }
 
+// =====================================================================
+// RESULTADO
+// =====================================================================
 function showResult(g){
-  clearInterval(timerInterval);
+  clearInterval(timerInt);
   if(gameUnsub){gameUnsub();gameUnsub=null;}
-  showScreen("screen-result");
-
-  const s0=g.scores[0],s1=g.scores[1];
-  const hp0=Math.max(0,g.hp[0]), hp1=Math.max(0,g.hp[1]);
+  ss("s-result");
+  const h0=Math.max(0,g.hp[0]),h1=Math.max(0,g.hp[1]);
   let winner,sub,trophy="🏆";
-
-  // Gana quien tenga mas HP, en empate quien tenga mas puntos
-  if(hp0>hp1){winner="Gana "+currentNames.host+"!";sub="Con "+hp0+" HP restantes";}
-  else if(hp1>hp0){winner="Gana "+currentNames.guest+"!";sub="Con "+hp1+" HP restantes";}
-  else if(s0>s1){winner="Gana "+currentNames.host+"!";sub="Empate de HP — mas preguntas correctas";}
-  else if(s1>s0){winner="Gana "+currentNames.guest+"!";sub="Empate de HP — mas preguntas correctas";}
-  else{winner="Empate total!";sub="Guerreros de igual nivel";trophy="⚔️";}
-
-  document.getElementById("res-trophy").textContent=trophy;
-  document.getElementById("res-winner").textContent=winner;
-  document.getElementById("res-sub").textContent=sub;
-  document.getElementById("res-l1").textContent=currentNames.host;
-  document.getElementById("res-l2").textContent=currentNames.guest;
-  document.getElementById("res-avatar-p1").innerHTML=AVATARS[currentAvatars.host]||AVATARS.warrior;
-  document.getElementById("res-avatar-p2").innerHTML=AVATARS[currentAvatars.guest]||AVATARS.robot;
-  document.getElementById("res-p1").textContent=s0+" puntos";
-  document.getElementById("res-p2").textContent=s1+" puntos";
-  document.getElementById("res-hp1").textContent=hp0+" HP restantes";
-  document.getElementById("res-hp2").textContent=hp1+" HP restantes";
-
-  if(myRole==="host") setTimeout(()=>remove(roomRef),3000);
+  if(h0>h1){winner="Gana "+cNames.host+"!";sub="Con "+h0+" HP restantes";}
+  else if(h1>h0){winner="Gana "+cNames.guest+"!";sub="Con "+h1+" HP restantes";}
+  else{winner="Empate!";sub="Guerreros igualados";trophy="⚔️";}
+  document.getElementById("r-trophy").textContent=trophy;
+  document.getElementById("r-winner").textContent=winner;
+  document.getElementById("r-sub").textContent=sub;
+  document.getElementById("r-n1").textContent=cNames.host;
+  document.getElementById("r-n2").textContent=cNames.guest;
+  document.getElementById("r-av1").innerHTML=AVS[cAv.host]||AVS.warrior;
+  document.getElementById("r-av2").innerHTML=AVS[cAv.guest]||AVS.robot;
+  document.getElementById("r-p1").textContent=h0+" HP";
+  document.getElementById("r-p2").textContent=h1+" HP";
+  document.getElementById("r-h1").textContent=g.hands[0].filter(c=>!c.used).length+" cartas restantes";
+  document.getElementById("r-h2").textContent=g.hands[1].filter(c=>!c.used).length+" cartas restantes";
+  if(myRole==="host")setTimeout(()=>remove(roomRef),4000);
 }
 
+// =====================================================================
+// SALIR / HOME
+// =====================================================================
 function leaveRoom(){
-  clearInterval(timerInterval);
+  clearInterval(timerInt);
   if(gameUnsub){gameUnsub();gameUnsub=null;}
   if(statusUnsub){statusUnsub();statusUnsub=null;}
   if(guestUnsub){guestUnsub();guestUnsub=null;}
-  if(roomRef){
-    if(myRole==="host") remove(roomRef);
-    else update(roomRef,{guest:"",guestAvatar:""});
-  }
-  roomRef=null; lastQIdx=-1;
+  if(roomRef){if(myRole==="host")remove(roomRef);else update(roomRef,{guest:"",guestAv:""});}
+  roomRef=null;
   goHome();
 }
-
 function goHome(){
-  lastQIdx=-1; answered=false;
-  clearInterval(timerInterval);
-  setLog("");
-  document.getElementById("join-code").value="";
-  showScreen("screen-home");
+  clearInterval(timerInt);answered=false;selectedCardId=null;
+  sl("");document.getElementById("h-code").value="";
+  closeModal("modal-coin");closeModal("modal-roulette");closeModal("modal-special");
+  ss("s-home");
 }
 </script>
 </body>

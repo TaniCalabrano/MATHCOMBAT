@@ -951,52 +951,70 @@ async function pickCoin(choice){
 function renderMyHand(hand, phase, isMyTurn){
   const container=document.getElementById("my-hand");
   container.innerHTML="";
-  document.getElementById("hand-title").textContent="Tu mano ("+hand.filter(c=>!c.used).length+" cartas)";
-  hand.forEach(card=>{
+  const available=hand.filter(c=>!c.used).length;
+  document.getElementById("hand-title").textContent="Tu mano ("+available+" cartas)";
+  hand.forEach((card,idx)=>{
     const div=document.createElement("div");
-    div.className="card-item "+card.color+(card.used?" used":"");
-    if(!card.used && isMyTurn && phase==="select") div.classList.add("");
+    const canClick=!card.used && isMyTurn && phase==="select";
+    div.className="card-item "+card.color+(card.used?" used":"")+(canClick?"":" disabled");
     div.innerHTML=`
       <div class="card-level">${card.label}</div>
       <div class="card-name">${card.name||card.q?.t||""}</div>
       <div class="card-dmg">${card.type==="special"?card.icon||"✨":(card.dmg+"dmg")}</div>`;
-    if(!card.used && isMyTurn && phase==="select"){
-      div.addEventListener("click",()=>selectCard(card));
-    } else {
-      div.classList.add("disabled");
+    if(canClick){
+      div.addEventListener("click",()=>selectCard(idx, card));
     }
     container.appendChild(div);
   });
 }
 
-async function selectCard(card){
+async function selectCard(cardIdx, card){
   if(!card||card.used)return;
   const snap=await get(ref(db,"rooms/"+roomCode+"/game"));
   let g=snap.val();if(!g)return;
   g=normalizeGame(g);
   const myIdx=myRole==="host"?0:1;
 
-  // Marcar carta como usada
+  // Verificar que la carta en ese indice no fue ya usada
+  const freshCard=g.hands[myIdx][cardIdx];
+  if(!freshCard||freshCard.used)return;
+
+  // Marcar carta como usada usando el indice directo
   const newHands=JSON.parse(JSON.stringify(g.hands));
-  const cardIdx=newHands[myIdx].findIndex(c=>c.id===card.id);
-  if(cardIdx===-1)return;
   newHands[myIdx][cardIdx].used=true;
 
-  if(card.type==="special"){
-    // Aplicar efecto inmediato
+  // Usar la carta fresca de Firebase (tiene los datos completos correctos)
+  const cardToPlay=newHands[myIdx][cardIdx];
+
+  if(cardToPlay.type==="special"){
     await update(ref(db,"rooms/"+roomCode+"/game"),{
       hands:newHands,
       phase:"special_effect",
-      attackCard:card,
+      attackCard:{
+        id:cardToPlay.id,
+        type:cardToPlay.type,
+        label:cardToPlay.label,
+        name:cardToPlay.name,
+        icon:cardToPlay.icon||"✨",
+        desc:cardToPlay.desc||"",
+        dmg:0,
+        color:cardToPlay.color
+      },
       specialBy:myIdx,
       ts:Date.now()
     });
   } else {
-    // Carta de ataque — pasar a fase de respuesta
     await update(ref(db,"rooms/"+roomCode+"/game"),{
       hands:newHands,
       phase:"answer",
-      attackCard:card,
+      attackCard:{
+        id:cardToPlay.id,
+        type:cardToPlay.type,
+        label:cardToPlay.label,
+        dmg:cardToPlay.dmg,
+        color:cardToPlay.color,
+        q:cardToPlay.q
+      },
       ts:Date.now()
     });
   }

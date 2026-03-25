@@ -581,12 +581,6 @@ document.getElementById("btn-cara").addEventListener("click",()=>pickCoin("cara"
 document.getElementById("btn-sello").addEventListener("click",()=>pickCoin("sello"));
 document.getElementById("btn-sp-ok").addEventListener("click",()=>{
   closeModal("modal-special");
-  // Despues de cerrar modal especial, pasar turno
-  const gameRefLocal = ref(db,"rooms/"+roomCode+"/game");
-  get(gameRefLocal).then(snap=>{
-    const g=snap.val();if(!g)return;
-    update(gameRefLocal,{phase:"select",turn:g.turn===0?1:0,ts:Date.now()});
-  });
 });
 
 // =====================================================================
@@ -855,6 +849,12 @@ function syncGameState(g){
     applySpecialEffect(g,myIdx,oppIdx);
     return;
   }
+  if(g.phase==="special_done"){
+    // El efecto ya fue aplicado — solo cerrar modal si sigue abierto
+    closeModal("modal-special");
+    closeModal("modal-coin");
+    closeModal("modal-roulette");
+  }
 
   closeModal("modal-coin");
   closeModal("modal-roulette");
@@ -1028,64 +1028,78 @@ async function applySpecialEffect(g,myIdx,oppIdx){
   const card=g.attackCard;
   if(!card)return;
   const by=g.specialBy;
-  // Solo el que la jugo aplica el efecto en Firebase
-  if(by!==myIdx){
-    // El otro jugador solo ve el modal
-    openModal("modal-special");
-    document.getElementById("sp-icon").textContent=card.icon||"✨";
-    document.getElementById("sp-title").textContent=card.name;
-    document.getElementById("sp-desc").textContent="El oponente uso: "+card.desc;
-    document.getElementById("btn-sp-ok").style.display="none";
-    return;
-  }
+
+  // Mostrar modal para ambos jugadores
   openModal("modal-special");
   document.getElementById("sp-icon").textContent=card.icon||"✨";
   document.getElementById("sp-title").textContent=card.name;
+  // Ambos ven el boton continuar
   document.getElementById("btn-sp-ok").style.display="block";
 
-  const newHP=[...g.hp];
-  const newShields=[...g.shields];
-  const newHands=JSON.parse(JSON.stringify(g.hands));
+  if(by!==myIdx){
+    // Soy el que recibe el efecto — solo muestro info, no aplico nada
+    document.getElementById("sp-desc").textContent="Tu oponente uso: "+card.desc;
+    return;
+  }
+
+  // Soy quien jugo la carta — aplico el efecto en Firebase
+  // Leer estado fresco para evitar conflictos
+  const freshSnap=await get(ref(db,"rooms/"+roomCode+"/game"));
+  const gFresh=normalizeGame(freshSnap.val());
+  if(!gFresh)return;
+
+  const newHP=[...gFresh.hp];
+  const newShields=[...gFresh.shields];
+  const newHands=JSON.parse(JSON.stringify(gFresh.hands));
+  let desc="";
 
   if(card.id==="shield"){
     newShields[by]=true;
-    document.getElementById("sp-desc").textContent="Tu proximo ataque sera bloqueado!";
-    await update(ref(db,"rooms/"+roomCode+"/game"),{hp:newHP,shields:newShields,hands:newHands,ts:Date.now()});
+    desc="Tu proximo ataque sera bloqueado!";
   } else if(card.id==="vampire"){
     const steal=Math.min(20,newHP[oppIdx]);
     newHP[oppIdx]=Math.max(0,newHP[oppIdx]-steal);
     newHP[by]=Math.min(MAX_HP,newHP[by]+steal);
-    document.getElementById("sp-desc").textContent="Robas "+steal+" HP al oponente!";
-    await update(ref(db,"rooms/"+roomCode+"/game"),{hp:newHP,shields:newShields,hands:newHands,ts:Date.now()});
+    desc="Robas "+steal+" HP al oponente!";
   } else if(card.id==="thief"){
     const oppAvail=newHands[oppIdx].filter(c=>!c.used);
     if(oppAvail.length>0){
       const stolen=oppAvail[Math.floor(Math.random()*oppAvail.length)];
-      const si=newHands[oppIdx].findIndex(c=>c.id===stolen.id);
-      newHands[oppIdx][si].used=true;
+      // Buscar por posicion en lugar de por id para evitar problemas de normalizacion
+      const si=newHands[oppIdx].indexOf(stolen);
+      if(si!==-1) newHands[oppIdx][si].used=true;
       const newCard={...stolen,id:"stolen"+Date.now(),used:false};
       newHands[by].push(newCard);
-      document.getElementById("sp-desc").textContent="Robas una carta al oponente!";
+      desc="Robas una carta al oponente!";
     } else {
-      document.getElementById("sp-desc").textContent="El oponente no tiene cartas disponibles!";
+      desc="El oponente no tiene cartas disponibles!";
     }
-    await update(ref(db,"rooms/"+roomCode+"/game"),{hp:newHP,shields:newShields,hands:newHands,ts:Date.now()});
   } else if(card.id==="fourier"){
-    const tmp=newHands[by].filter(c=>!c.used);
-    const oppA=newHands[oppIdx].filter(c=>!c.used);
-    // Intercambiar disponibles
-    const usedBy=newHands[by].filter(c=>c.used);
-    const usedOpp=newHands[oppIdx].filter(c=>c.used);
-    newHands[by]=[...usedBy,...oppA];
-    newHands[oppIdx]=[...usedOpp,...tmp];
-    document.getElementById("sp-desc").textContent="Todas las cartas fueron intercambiadas!";
-    await update(ref(db,"rooms/"+roomCode+"/game"),{hp:newHP,shields:newShields,hands:newHands,ts:Date.now()});
+    // Separar usadas y disponibles de cada jugador
+    const myUsed=newHands[by].filter(c=>c.used);
+    const myAvail=newHands[by].filter(c=>!c.used);
+    const oppUsed=newHands[oppIdx].filter(c=>c.used);
+    const oppAvail=newHands[oppIdx].filter(c=>!c.used);
+    // Intercambiar solo las disponibles
+    newHands[by]=[...myUsed,...oppAvail];
+    newHands[oppIdx]=[...oppUsed,...myAvail];
+    desc="Todas las cartas disponibles fueron intercambiadas!";
   }
 
-  // Verificar fin por HP
-  if(newHP[0]<=0||newHP[1]<=0){
-    await update(ref(db,"rooms/"+roomCode+"/game"),{phase:"finished"});
-  }
+  document.getElementById("sp-desc").textContent=desc;
+
+  const finished=newHP[0]<=0||newHP[1]<=0;
+  // Escribir efecto en Firebase con phase="special_done"
+  // El modal de ambos mostrara el resultado y al cerrar se pasara el turno
+  await update(ref(db,"rooms/"+roomCode+"/game"),{
+    hp:newHP,
+    shields:newShields,
+    hands:newHands,
+    phase: finished ? "finished" : "special_done",
+    turn: g.turn===0?1:0,
+    attackCard:null,
+    ts:Date.now()
+  });
 }
 
 // =====================================================================

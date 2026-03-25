@@ -67,11 +67,11 @@ input:focus, select:focus { border-color: #4A80D4; }
     <label>Tu nombre</label>
     <input type="text" id="home-name" placeholder="Escribe tu nombre" maxlength="20" />
     <div class="divider">— Que quieres hacer? —</div>
-    <button class="btn btn-primary" onclick="createRoom()">Crear sala nueva</button>
+    <button class="btn btn-primary" id="btn-create">Crear sala nueva</button>
     <div style="margin-top:1rem;">
       <label>Codigo de sala (para unirte)</label>
       <input type="text" id="join-code" placeholder="Ej: A3F7" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-size:18px;" />
-      <button class="btn" onclick="joinRoom()">Unirse a sala</button>
+      <button class="btn" id="btn-join">Unirse a sala</button>
     </div>
   </div>
   <div class="log" id="home-log"></div>
@@ -99,8 +99,8 @@ input:focus, select:focus { border-color: #4A80D4; }
       <div class="big" id="lobby-status-title">Esperando oponente<span class="dot-anim"></span></div>
       <div class="small" id="lobby-status-sub">Nadie conectado aun</div>
     </div>
-    <button class="btn btn-primary" id="btn-start" style="display:none;" onclick="hostStartGame()">Iniciar partida</button>
-    <button class="btn btn-danger" onclick="leaveRoom()">Cancelar</button>
+    <button class="btn btn-primary" id="btn-start" style="display:none;">Iniciar partida</button>
+    <button class="btn btn-danger" id="btn-cancel">Cancelar</button>
   </div>
 </div>
 
@@ -112,7 +112,7 @@ input:focus, select:focus { border-color: #4A80D4; }
       <div class="small">Esperando que el anfitrion inicie la partida<span class="dot-anim"></span></div>
     </div>
     <div class="info" id="guest-lobby-info"></div>
-    <button class="btn btn-danger" onclick="leaveRoom()">Salir</button>
+    <button class="btn btn-danger" id="btn-leave-guest">Salir</button>
   </div>
 </div>
 
@@ -155,14 +155,13 @@ input:focus, select:focus { border-color: #4A80D4; }
         <div class="score-pts" id="res-p2"></div>
       </div>
     </div>
-    <button class="btn btn-primary" onclick="goHome()">Volver al inicio</button>
+    <button class="btn btn-primary" id="btn-home">Volver al inicio</button>
   </div>
 </div>
 
-<!-- Firebase usando modulos ESM — compatible con GitHub Pages -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, update, onValue, off, once, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, update, onValue, off, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyBJX7E8Svv_2pqe6Ylo2J6DrsZmuhMo9vg",
@@ -187,7 +186,7 @@ const QUESTIONS = [
   { topic:"Calculo", q:"El Teorema Fundamental del Calculo relaciona:", opts:["Derivadas e integrales","Limites y series","Derivadas parciales","Integrales dobles"], ans:0 },
   { topic:"Calculo", q:"La integral de 1/x dx es:", opts:["x+C","ln|x|+C","1/x^2+C","-1/x^2+C"], ans:1 },
   { topic:"Calculo", q:"La derivada de tan(x) es:", opts:["sec^2(x)","cos^2(x)","-sec^2(x)","cot(x)"], ans:0 },
-  { topic:"Calculo", q:"Si f(x) = x^2 * e^x, entonces f'(x) es:", opts:["2x*e^x","x^2*e^x","(2x+x^2)*e^x","2x+e^x"], ans:2 },
+  { topic:"Calculo", q:"Si f(x) = x^2*e^x, entonces f'(x) es:", opts:["2x*e^x","x^2*e^x","(2x+x^2)*e^x","2x+e^x"], ans:2 },
   { topic:"EDO", q:"La solucion general de y' = y es:", opts:["y=Cx","y=C*e^x","y=C+e^x","y=ln(x)+C"], ans:1 },
   { topic:"EDO", q:"Que tipo de EDO es y'' + 4y = 0?", opts:["No lineal orden 1","Lineal orden 2 homogenea","Lineal orden 1","Bernoulli"], ans:1 },
   { topic:"EDO", q:"La solucion de y' + y = 0 con y(0)=2 es:", opts:["y=2*e^(-x)","y=2*e^x","y=e^(-x)+1","y=2x+2"], ans:0 },
@@ -202,7 +201,7 @@ let myName="", myRole="", roomCode="", roomRef=null;
 let timerInterval=null, timeLeft=30, answered=false;
 let currentConfig={numQ:10,timeLimit:30};
 let currentNames={host:"",guest:""};
-let lastQIdx=-1, gameListener=null;
+let lastQIdx=-1, gameUnsub=null, statusUnsub=null, guestUnsub=null;
 
 function showScreen(id){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -215,11 +214,19 @@ function genCode(){
   for(let i=0;i<4;i++) s+=c[Math.floor(Math.random()*c.length)];
   return s;
 }
+function setLog(msg){ document.getElementById("home-log").textContent=msg; }
 
-// Exponer funciones al scope global para los onclick del HTML
-window.createRoom = async function(){
+// ---- Conectar botones via addEventListener (no onclick) ----
+document.getElementById("btn-create").addEventListener("click", createRoom);
+document.getElementById("btn-join").addEventListener("click", joinRoom);
+document.getElementById("btn-start").addEventListener("click", hostStartGame);
+document.getElementById("btn-cancel").addEventListener("click", leaveRoom);
+document.getElementById("btn-leave-guest").addEventListener("click", leaveRoom);
+document.getElementById("btn-home").addEventListener("click", goHome);
+
+async function createRoom(){
   myName=document.getElementById("home-name").value.trim();
-  if(!myName){document.getElementById("home-log").textContent="Escribe tu nombre primero";return;}
+  if(!myName){setLog("Escribe tu nombre primero");return;}
   myRole="host";
   roomCode=genCode();
   roomRef=ref(db,"rooms/"+roomCode);
@@ -227,7 +234,7 @@ window.createRoom = async function(){
   document.getElementById("lobby-code").textContent=roomCode;
   showScreen("screen-lobby");
 
-  onValue(ref(db,"rooms/"+roomCode+"/guest"),snap=>{
+  guestUnsub=onValue(ref(db,"rooms/"+roomCode+"/guest"),snap=>{
     const g=snap.val();
     if(g){
       document.getElementById("lobby-status-title").textContent=g+" se unio!";
@@ -240,34 +247,34 @@ window.createRoom = async function(){
     }
   });
 
-  onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
+  statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
     if(snap.val()==="playing") initGame();
   });
-};
+}
 
-window.joinRoom = async function(){
+async function joinRoom(){
   myName=document.getElementById("home-name").value.trim();
   const code=document.getElementById("join-code").value.trim().toUpperCase();
-  if(!myName){document.getElementById("home-log").textContent="Escribe tu nombre primero";return;}
-  if(code.length!==4){document.getElementById("home-log").textContent="El codigo debe tener 4 caracteres";return;}
+  if(!myName){setLog("Escribe tu nombre primero");return;}
+  if(code.length!==4){setLog("El codigo debe tener 4 caracteres");return;}
   roomCode=code;
   roomRef=ref(db,"rooms/"+roomCode);
-  const snap=await once(roomRef,"value");
-  if(!snap.exists()){document.getElementById("home-log").textContent="Sala no encontrada";return;}
+  const snap=await get(roomRef);
+  if(!snap.exists()){setLog("Sala no encontrada");return;}
   const data=snap.val();
-  if(data.status==="playing"){document.getElementById("home-log").textContent="La sala ya esta en juego";return;}
-  if(data.guest&&data.guest!==""){document.getElementById("home-log").textContent="La sala ya tiene dos jugadores";return;}
+  if(data.status==="playing"){setLog("La sala ya esta en juego");return;}
+  if(data.guest&&data.guest!==""){setLog("La sala ya tiene dos jugadores");return;}
   myRole="guest";
   await update(roomRef,{guest:myName});
   document.getElementById("guest-lobby-info").textContent="Sala: "+roomCode+" — Anfitrion: "+data.host;
   showScreen("screen-guest-lobby");
 
-  onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
+  statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
     if(snap.val()==="playing") initGame();
   });
-};
+}
 
-window.hostStartGame = async function(){
+async function hostStartGame(){
   const numQ=parseInt(document.getElementById("lobby-numq").value);
   const timeLimit=parseInt(document.getElementById("lobby-time").value);
   const qList=shuffle(QUESTIONS).slice(0,numQ);
@@ -276,11 +283,11 @@ window.hostStartGame = async function(){
     config:{numQ,timeLimit},
     game:{qList:qList,qIdx:0,turn:0,scores:[0,0],phase:"question",ts:Date.now()}
   });
-};
+}
 
 async function initGame(){
-  if(gameListener) off(ref(db,"rooms/"+roomCode+"/game"),gameListener);
-  const snap=await once(ref(db,"rooms/"+roomCode),"value");
+  if(gameUnsub) gameUnsub();
+  const snap=await get(ref(db,"rooms/"+roomCode));
   const data=snap.val();
   if(!data) return;
   currentConfig=data.config;
@@ -291,7 +298,7 @@ async function initGame(){
   lastQIdx=-1;
   showScreen("screen-game");
 
-  gameListener=onValue(ref(db,"rooms/"+roomCode+"/game"),snap=>{
+  gameUnsub=onValue(ref(db,"rooms/"+roomCode+"/game"),snap=>{
     const g=snap.val();
     if(!g) return;
     if(g.phase==="finished"){showResult(g);return;}
@@ -326,7 +333,7 @@ function renderQuestion(g){
     btn.className="opt-btn";
     btn.textContent=o;
     btn.disabled=!isMyTurn;
-    if(isMyTurn) btn.onclick=()=>submitAnswer(i,g);
+    if(isMyTurn) btn.addEventListener("click",()=>submitAnswer(i,g));
     opts.appendChild(btn);
   });
   if(isMyTurn){
@@ -380,7 +387,7 @@ function updateBar(total){
 
 function showResult(g){
   clearInterval(timerInterval);
-  if(gameListener) off(ref(db,"rooms/"+roomCode+"/game"));
+  if(gameUnsub){gameUnsub();gameUnsub=null;}
   showScreen("screen-result");
   const s0=g.scores[0],s1=g.scores[1];
   let winner,sub;
@@ -396,24 +403,26 @@ function showResult(g){
   if(myRole==="host") setTimeout(()=>remove(roomRef),3000);
 }
 
-window.leaveRoom = function(){
+function leaveRoom(){
   clearInterval(timerInterval);
-  if(gameListener) off(ref(db,"rooms/"+roomCode+"/game"));
+  if(gameUnsub){gameUnsub();gameUnsub=null;}
+  if(statusUnsub){statusUnsub();statusUnsub=null;}
+  if(guestUnsub){guestUnsub();guestUnsub=null;}
   if(roomRef){
     if(myRole==="host") remove(roomRef);
     else update(roomRef,{guest:""});
   }
-  roomRef=null;gameListener=null;lastQIdx=-1;
+  roomRef=null; lastQIdx=-1;
   goHome();
-};
+}
 
-window.goHome = function(){
-  lastQIdx=-1;answered=false;
+function goHome(){
+  lastQIdx=-1; answered=false;
   clearInterval(timerInterval);
-  document.getElementById("home-log").textContent="";
+  setLog("");
   document.getElementById("join-code").value="";
   showScreen("screen-home");
-};
+}
 </script>
 </body>
 </html>

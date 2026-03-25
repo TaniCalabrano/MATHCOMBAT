@@ -470,6 +470,10 @@ const app = initializeApp({
 });
 const db = getDatabase(app);
 
+// Precargar preguntas en segundo plano al cargar la pagina
+// Asi cuando el host inicie ya estan en cache y no hay delay
+window.addEventListener("load",()=>preloadAllTopics());
+
 // =====================================================================
 // AVATARES
 // =====================================================================
@@ -500,17 +504,42 @@ const SPECIAL_CARDS = [
 
 const MAX_HP = 100;
 
-// Carga preguntas del JSON de la tematica dada
+// Cache de preguntas por tematica para no recargar cada vez
+const QS_CACHE={};
+
 async function loadQuestions(topic){
+  // Si ya esta en cache usarlo directamente
+  if(QS_CACHE[topic]&&QS_CACHE[topic].length>0){
+    QS=QS_CACHE[topic];
+    console.log("Cache: "+QS.length+" preguntas de "+(TOPIC_NAMES[topic]||topic));
+    return;
+  }
   try{
-    const res=await fetch("preguntas/"+topic+".json");
-    if(!res.ok) throw new Error("No se pudo cargar "+topic);
-    QS=await res.json();
-    console.log("Cargadas "+QS.length+" preguntas de "+TOPIC_NAMES[topic]);
+    // Usar ruta absoluta basada en la ubicacion actual del HTML
+    const base=window.location.href.replace(/\/[^/]*$/,"/");
+    const url=base+topic+".json";
+    console.log("Cargando: "+url);
+    const res=await fetch(url);
+    if(!res.ok) throw new Error("HTTP "+res.status+" al cargar "+url);
+    const data=await res.json();
+    if(!Array.isArray(data)||data.length===0) throw new Error("JSON vacio o invalido");
+    QS_CACHE[topic]=data;
+    QS=data;
+    console.log("OK: "+QS.length+" preguntas de "+(TOPIC_NAMES[topic]||topic));
   } catch(e){
     console.error("Error cargando preguntas:",e);
     QS=[];
   }
+}
+
+// Precargar todas las tematicas al iniciar la app
+async function preloadAllTopics(){
+  const topics=Object.keys(TOPIC_NAMES);
+  for(const t of topics){
+    await loadQuestions(t);
+  }
+  console.log("Precarga completa. Tematicas disponibles:",
+    topics.filter(t=>QS_CACHE[t]&&QS_CACHE[t].length>0));
 }
 
 function makeHand(qs){
@@ -763,8 +792,15 @@ async function hostStart(){
   }
 
   // Cargar preguntas de la tematica ganadora
+  document.getElementById("btn-start").textContent="Cargando preguntas...";
+  document.getElementById("btn-start").disabled=true;
   await loadQuestions(finalTopic);
-  if(QS.length===0){sl("Error cargando preguntas");return;}
+  document.getElementById("btn-start").textContent="Iniciar combate";
+  document.getElementById("btn-start").disabled=false;
+  if(QS.length===0){
+    sl("Error: no se pudieron cargar las preguntas de '"+finalTopic+"'. Verifica que el archivo preguntas/"+finalTopic+".json existe en el repositorio.");
+    return;
+  }
 
   const h1=makeHand(QS),h2=makeHand(QS),hd=makeHiddenDeck(QS);
   await update(roomRef,{

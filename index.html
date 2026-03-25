@@ -203,6 +203,12 @@ input:focus,select:focus{border-color:#a78bfa;}
       <option value="robot">Robot</option>
       <option value="scientist">Cientifico</option>
     </select>
+    <label>Tu tematica preferida</label>
+    <select id="h-topic">
+      <option value="calculo_diferencial">Calculo Diferencial</option>
+      <option value="calculo_integral">Calculo Integral</option>
+      <option value="edos">EDOs</option>
+    </select>
     <div class="divider">— Que quieres hacer? —</div>
     <button class="btn btn-purple" id="btn-create">Crear sala</button>
     <label>Codigo de sala</label>
@@ -218,6 +224,7 @@ input:focus,select:focus{border-color:#a78bfa;}
   <div class="sub">Comparte este codigo</div>
   <div class="ui-card">
     <div class="room-code" id="l-code">----</div>
+    <div style="font-size:12px;color:#666;text-align:center;margin-bottom:.75rem;" id="l-topic-display"></div>
     <div class="wait-big" id="l-title">Esperando oponente<span class="dot"></span></div>
     <div class="wait-small" id="l-sub">Nadie conectado aun</div>
     <button class="btn btn-purple" id="btn-start" style="display:none;margin-top:1rem;">Iniciar combate</button>
@@ -231,7 +238,33 @@ input:focus,select:focus{border-color:#a78bfa;}
     <div class="wait-big">Conectado</div>
     <div class="wait-small">Esperando que el anfitrion inicie<span class="dot"></span></div>
     <div class="info" id="g-info"></div>
+    <div style="font-size:12px;color:#a78bfa;text-align:center;margin-top:.5rem;" id="g-topic-display"></div>
     <button class="btn btn-red" id="btn-gleave">Salir</button>
+  </div>
+</div>
+
+<!-- MODAL TEMATICA (cuando difieren) -->
+<div class="modal" id="modal-topic">
+  <div class="modal-box">
+    <div style="font-size:36px;margin-bottom:.5rem;">📚</div>
+    <div class="modal-title" id="topic-title">Tematicas distintas</div>
+    <div class="modal-sub" id="topic-sub">Girando la moneda para decidir...</div>
+    <div style="display:flex;justify-content:center;gap:16px;margin:1rem 0;" id="topic-vs">
+      <div style="text-align:center;">
+        <div style="font-size:11px;color:#666;margin-bottom:4px;" id="tv-n1">—</div>
+        <div style="background:#1a2a45;border:1.5px solid #3b82f6;border-radius:8px;padding:.5rem .75rem;font-size:13px;font-weight:600;color:#60a5fa;" id="tv-t1">—</div>
+      </div>
+      <div style="font-size:22px;line-height:50px;color:#555;">VS</div>
+      <div style="text-align:center;">
+        <div style="font-size:11px;color:#666;margin-bottom:4px;" id="tv-n2">—</div>
+        <div style="background:#2a1a45;border:1.5px solid #8b5cf6;border-radius:8px;padding:.5rem .75rem;font-size:13px;font-weight:600;color:#c4b5fd;" id="tv-t2">—</div>
+      </div>
+    </div>
+    <div class="coin" id="topic-coin-el" style="width:60px;height:60px;margin:0 auto .75rem;">
+      <div class="coin-face" style="font-size:20px;">☀️</div>
+      <div class="coin-back" style="font-size:20px;">🌙</div>
+    </div>
+    <div class="info" id="topic-result" style="font-size:15px;font-weight:700;min-height:20px;"></div>
   </div>
 </div>
 
@@ -450,33 +483,6 @@ const AVNAMES = {warrior:"Guerrero",robot:"Robot",scientist:"Cientifico"};
 // =====================================================================
 // PREGUNTAS
 // =====================================================================
-const QS = [
-  {t:"Calculo",q:"\\frac{d}{dx}(x^3+2x)=",opts:["3x^2+2","3x^2+2x","x^2+2","3x+2"],ans:0},
-  {t:"Calculo",q:"\\int_0^1 x^2\\,dx=",opts:["\\tfrac{1}{2}","\\tfrac{1}{3}","\\tfrac{1}{4}","\\tfrac{2}{3}"],ans:1},
-  {t:"Calculo",q:"\\lim_{x\\to0}\\frac{\\sin x}{x}=",opts:["0","\\infty","1","\\nexists"],ans:2},
-  {t:"Calculo",q:"\\frac{d}{dx}e^x=",opts:["xe^{x-1}","e^x","e","1"],ans:1},
-  {t:"Calculo",q:"\\frac{d}{dx}\\ln x=",opts:["\\tfrac{1}{x}","\\tfrac{\\ln x}{x}","x","\\tfrac{1}{x^2}"],ans:0},
-  {t:"Calculo",q:"\\int\\cos x\\,dx=",opts:["-\\sin x+C","\\sin x+C","\\cos x+C","-\\cos x+C"],ans:1},
-  {t:"Calculo",q:"\\frac{d}{dx}(x\\sin x)=",opts:["\\cos x","\\sin x+x\\cos x","x\\cos x","\\sin x-x\\cos x"],ans:1},
-  {t:"Calculo",q:"\\frac{d}{dx}f(g(x))=",opts:["f'g'","f(g')","f'(g)\\cdot g'","f'(g)+g'"],ans:2},
-  {t:"Calculo",q:"\\int\\tfrac{1}{x}\\,dx=",opts:["x+C","\\ln|x|+C","\\tfrac{1}{x^2}+C","-\\tfrac{1}{x^2}+C"],ans:1},
-  {t:"Calculo",q:"\\frac{d}{dx}\\tan x=",opts:["\\sec^2 x","\\cos^2 x","-\\sec^2 x","\\cot x"],ans:0},
-  {t:"Calculo",q:"\\frac{d}{dx}(x^2 e^x)=",opts:["2xe^x","x^2e^x","(2x+x^2)e^x","2x+e^x"],ans:2},
-  {t:"Calculo",q:"\\int e^x\\,dx=",opts:["e^x+C","xe^x+C","e^{x+1}+C","\\tfrac{e^x}{x}+C"],ans:0},
-  {t:"Calculo",q:"\\frac{d}{dx}\\sin x=",opts:["\\cos x","-\\cos x","\\sin x","-\\sin x"],ans:0},
-  {t:"Calculo",q:"\\int\\sin x\\,dx=",opts:["\\cos x+C","-\\cos x+C","\\sin x+C","-\\sin x+C"],ans:1},
-  {t:"EDO",q:"\\text{Sol. general de }y'=y",opts:["y=Cx","y=Ce^x","y=C+e^x","y=\\ln x+C"],ans:1},
-  {t:"EDO",q:"y''+4y=0\\text{ es de tipo:}",opts:["\\text{No lineal}","\\text{Lin. 2 hom.}","\\text{Lin. 1}","\\text{Bernoulli}"],ans:1},
-  {t:"EDO",q:"y'+y=0,\\;y(0)=2\\Rightarrow",opts:["2e^{-x}","2e^x","e^{-x}+1","2x+2"],ans:0},
-  {t:"EDO",q:"\\text{Factor integrante de }y'+P(x)y=Q",opts:["e^{P}","e^{\\int P\\,dx}","\\int P\\,dx","\\tfrac{1}{P}"],ans:1},
-  {t:"EDO",q:"\\text{Raices de }y''-y=0",opts:["\\pm i","0,1","\\pm 1","1\\text{ doble}"],ans:2},
-  {t:"EDO",q:"\\text{Metodo numerico para }y'=f(x,y)",opts:["\\text{Sep. var.}","\\text{Euler}","\\text{F. integrante}","\\text{Var. param.}"],ans:1},
-  {t:"EDO",q:"\\text{Pol. caract. de }y''+2y'+y=0",opts:["r^2+2r+1","r^2-2r+1","r^2+2","r+1"],ans:0},
-  {t:"EDO",q:"\\text{EDO separable:}",opts:["y''=f(x,y)","y'=f(x)g(y)","y'+Py=0","y''+Py=Q"],ans:1},
-  {t:"Calculo",q:"\\frac{d^2}{dx^2}x^4=",opts:["4x^3","12x^2","24x","6x^2"],ans:1},
-  {t:"Calculo",q:"\\int_0^\\pi\\sin x\\,dx=",opts:["0","1","2","\\pi"],ans:2},
-];
-
 // =====================================================================
 // CARTAS
 // =====================================================================
@@ -494,34 +500,64 @@ const SPECIAL_CARDS = [
 
 const MAX_HP = 100;
 
+// Carga preguntas del JSON de la tematica dada
+async function loadQuestions(topic){
+  try{
+    const res=await fetch("preguntas/"+topic+".json");
+    if(!res.ok) throw new Error("No se pudo cargar "+topic);
+    QS=await res.json();
+    console.log("Cargadas "+QS.length+" preguntas de "+TOPIC_NAMES[topic]);
+  } catch(e){
+    console.error("Error cargando preguntas:",e);
+    QS=[];
+  }
+}
+
 function makeHand(qs){
-  const shuffled = [...qs].sort(()=>Math.random()-.5);
-  const sp = SPECIAL_CARDS[Math.floor(Math.random()*SPECIAL_CARDS.length)];
-  const dist = [0,0,0,1,1,2]; // 3 normal,2 fuerte,1 legend
-  const cards = dist.map((ti,i)=>{
-    const ct = CARD_TYPES[ti];
-    return {id:"c"+i, type:ct.type, label:ct.label, dmg:ct.dmg, color:ct.color,
-            q:shuffled[i], used:false};
-  });
-  const spCard = {...sp, id:"cs", q:null, used:false};
-  const all = [...cards, spCard].sort(()=>Math.random()-.5);
-  return all;
+  if(!qs||qs.length===0) return [];
+  // Separar por nivel segun el campo "nivel" del JSON
+  const normales  = qs.filter(q=>q.nivel==="normal"||!q.nivel);
+  const fuertes   = qs.filter(q=>q.nivel==="fuerte");
+  const legendarias = qs.filter(q=>q.nivel==="legendaria");
+  const shuffN = [...normales].sort(()=>Math.random()-.5);
+  const shuffF = [...fuertes].sort(()=>Math.random()-.5);
+  const shuffL = [...legendarias].sort(()=>Math.random()-.5);
+  // Distribucion: 3 normal, 2 fuerte, 1 legendaria — con fallback si no hay suficientes
+  const all3=[...shuffN,...shuffF,...shuffL].sort(()=>Math.random()-.5);
+  const pick=(arr,n)=>arr.length>=n?arr.slice(0,n):all3.slice(0,n);
+  const cardsData=[
+    ...pick(shuffN,3).map((q,i)=>({id:"cn"+i,type:"normal",label:"Normal",dmg:15,color:"card-normal",q,used:false})),
+    ...pick(shuffF,2).map((q,i)=>({id:"cf"+i,type:"strong",label:"Fuerte",dmg:20,color:"card-strong",q,used:false})),
+    ...pick(shuffL,1).map((q,i)=>({id:"cl"+i,type:"legend",label:"Legendaria",dmg:30,color:"card-legend",q,used:false})),
+  ];
+  const sp=SPECIAL_CARDS[Math.floor(Math.random()*SPECIAL_CARDS.length)];
+  const spCard={...sp,id:"cs",q:null,used:false};
+  return [...cardsData,spCard].sort(()=>Math.random()-.5);
 }
 
 function makeHiddenDeck(qs){
-  const sh = [...qs].sort(()=>Math.random()-.5);
+  if(!qs||qs.length===0) return [];
+  const sh=[...qs].sort(()=>Math.random()-.5);
   return sh.slice(0,8).map((q,i)=>{
-    const ti = Math.floor(Math.random()*3);
-    const ct = CARD_TYPES[ti];
-    return {id:"h"+i, type:ct.type, label:ct.label, dmg:ct.dmg, color:ct.color,
-            q, used:false};
+    const ti=Math.floor(Math.random()*3);
+    const ct=CARD_TYPES[ti];
+    return {id:"h"+i,type:ct.type,label:ct.label,dmg:ct.dmg,color:ct.color,q,used:false};
   });
 }
 
 // =====================================================================
 // ESTADO
 // =====================================================================
-let myName="",myRole="",myAv="warrior",roomCode="",roomRef=null;
+let myName="",myRole="",myAv="warrior",myTopic="calculo_diferencial",roomCode="",roomRef=null;
+
+const TOPIC_NAMES={
+  calculo_diferencial:"Calculo Diferencial",
+  calculo_integral:"Calculo Integral",
+  edos:"EDOs"
+};
+
+// QS se carga dinamicamente desde el JSON de la tematica ganadora
+let QS=[];
 let timerInt=null,timeLeft=30,answered=false;
 let cNames={host:"",guest:""},cAv={host:"warrior",guest:"robot"};
 let gameUnsub=null,statusUnsub=null,guestUnsub=null;
@@ -648,23 +684,40 @@ document.getElementById("btn-sp-ok").addEventListener("click",()=>{
 async function createRoom(){
   myName=document.getElementById("h-name").value.trim();
   myAv=document.getElementById("h-avatar").value;
+  myTopic=document.getElementById("h-topic").value;
   if(!myName){sl("Escribe tu nombre");return;}
   myRole="host";roomCode=genCode();
   roomRef=ref(db,"rooms/"+roomCode);
-  await set(roomRef,{host:myName,hostAv:myAv,guest:"",guestAv:"",status:"waiting",game:null});
+  await set(roomRef,{
+    host:myName,hostAv:myAv,hostTopic:myTopic,
+    guest:"",guestAv:"",guestTopic:"",
+    status:"waiting",game:null
+  });
   document.getElementById("l-code").textContent=roomCode;
+  document.getElementById("l-topic-display").textContent=
+    "Tu tematica: "+TOPIC_NAMES[myTopic];
   ss("s-lobby");
   guestUnsub=onValue(ref(db,"rooms/"+roomCode+"/guest"),snap=>{
     const g=snap.val();
-    if(g){document.getElementById("l-title").textContent=g+" se unio!";document.getElementById("l-sub").textContent="Ya puedes iniciar";document.getElementById("btn-start").style.display="block";}
-    else{document.getElementById("l-title").innerHTML="Esperando oponente<span class='dot'></span>";document.getElementById("l-sub").textContent="Nadie conectado aun";document.getElementById("btn-start").style.display="none";}
+    if(g){
+      document.getElementById("l-title").textContent=g+" se unio!";
+      document.getElementById("l-sub").textContent="Ya puedes iniciar";
+      document.getElementById("btn-start").style.display="block";
+    } else {
+      document.getElementById("l-title").innerHTML="Esperando oponente<span class='dot'></span>";
+      document.getElementById("l-sub").textContent="Nadie conectado aun";
+      document.getElementById("btn-start").style.display="none";
+    }
   });
-  statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{if(snap.val()==="coin")initGame();});
+  statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
+    if(snap.val()==="coin") initGame();
+  });
 }
 
 async function joinRoom(){
   myName=document.getElementById("h-name").value.trim();
   myAv=document.getElementById("h-avatar").value;
+  myTopic=document.getElementById("h-topic").value;
   const code=document.getElementById("h-code").value.trim().toUpperCase();
   if(!myName){sl("Escribe tu nombre");return;}
   if(code.length!==4){sl("Codigo de 4 caracteres");return;}
@@ -675,17 +728,37 @@ async function joinRoom(){
   if(d.status!=="waiting"){sl("Sala no disponible");return;}
   if(d.guest&&d.guest!==""){sl("Sala llena");return;}
   myRole="guest";
-  await update(roomRef,{guest:myName,guestAv:myAv});
+  await update(roomRef,{guest:myName,guestAv:myAv,guestTopic:myTopic});
   document.getElementById("g-info").textContent="Sala: "+roomCode+" — vs "+d.host;
+  document.getElementById("g-topic-display").textContent=
+    "Tu tematica: "+TOPIC_NAMES[myTopic]+" | Rival: "+TOPIC_NAMES[d.hostTopic||"calculo_diferencial"];
   ss("s-guest");
-  statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{if(snap.val()==="coin")initGame();});
+  statusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
+    if(snap.val()==="coin") initGame();
+  });
 }
 
 async function hostStart(){
   const snap=await get(roomRef);
+  const d=snap.val();
+  const hostTopic=d.hostTopic||"calculo_diferencial";
+  const guestTopic=d.guestTopic||"calculo_diferencial";
+
+  let finalTopic=hostTopic;
+  if(hostTopic!==guestTopic){
+    // Tematicas distintas — moneda decide
+    finalTopic=Math.random()<0.5?hostTopic:guestTopic;
+    await showTopicCoinModal(d.host,d.guest,hostTopic,guestTopic,finalTopic);
+  }
+
+  // Cargar preguntas de la tematica ganadora
+  await loadQuestions(finalTopic);
+  if(QS.length===0){sl("Error cargando preguntas");return;}
+
   const h1=makeHand(QS),h2=makeHand(QS),hd=makeHiddenDeck(QS);
   await update(roomRef,{
     status:"coin",
+    topic:finalTopic,
     rematch:[false,false],
     game:{
       hp:[MAX_HP,MAX_HP],
@@ -705,6 +778,35 @@ async function hostStart(){
   });
 }
 
+function showTopicCoinModal(hostName,guestName,hostTopic,guestTopic,winner){
+  return new Promise(resolve=>{
+    openModal("modal-topic");
+    document.getElementById("topic-title").textContent="Tematicas distintas — Lanzando moneda";
+    document.getElementById("topic-sub").textContent="La moneda decide la tematica del combate";
+    document.getElementById("tv-n1").textContent=hostName;
+    document.getElementById("tv-t1").textContent=TOPIC_NAMES[hostTopic];
+    document.getElementById("tv-n2").textContent=guestName;
+    document.getElementById("tv-t2").textContent=TOPIC_NAMES[guestTopic];
+    document.getElementById("topic-result").textContent="";
+    const coinEl=document.getElementById("topic-coin-el");
+    coinEl.classList.remove("spin");
+    void coinEl.offsetWidth;
+    coinEl.classList.add("spin");
+    setTimeout(()=>{
+      const winnerName=winner===hostTopic?hostName:guestName;
+      document.getElementById("topic-result").textContent=
+        "Tematica elegida: "+TOPIC_NAMES[winner]+" ("+winnerName+")";
+      setTimeout(()=>{
+        closeModal("modal-topic");
+        resolve();
+      },2500);
+    },2100);
+  });
+}
+
+// En initGame, cargar las preguntas de la tematica guardada en Firebase
+// (el guest tambien necesita cargarlas para la baraja oculta)
+
 // =====================================================================
 // INIT GAME
 // =====================================================================
@@ -714,6 +816,12 @@ async function initGame(){
   const d=snap.val();if(!d)return;
   cNames.host=d.host;cNames.guest=d.guest;
   cAv.host=d.hostAv||"warrior";cAv.guest=d.guestAv||"robot";
+
+  // Cargar preguntas de la tematica guardada en Firebase (importante para el guest)
+  if(d.topic && QS.length===0){
+    await loadQuestions(d.topic);
+  }
+
   document.getElementById("fn-p1").textContent=d.host;
   document.getElementById("fr-p1").textContent=AVNAMES[cAv.host]||"";
   document.getElementById("av-p1").innerHTML=AVS[cAv.host]||AVS.warrior;
@@ -1613,7 +1721,7 @@ function leaveRoom(){
 function goHome(){
   clearInterval(timerInt);answered=false;selectedCardId=null;
   sl("");document.getElementById("h-code").value="";
-  closeModal("modal-coin");closeModal("modal-roulette");closeModal("modal-special");closeModal("modal-thief");
+  closeModal("modal-coin");closeModal("modal-roulette");closeModal("modal-special");closeModal("modal-thief");closeModal("modal-topic");
   ss("s-home");
 }
 </script>

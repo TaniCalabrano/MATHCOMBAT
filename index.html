@@ -159,10 +159,12 @@ input:focus, select:focus { border-color: #4A80D4; }
   </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script>
-firebase.initializeApp({
+<!-- Firebase usando modulos ESM — compatible con GitHub Pages -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, update, onValue, off, once, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const app = initializeApp({
   apiKey: "AIzaSyBJX7E8Svv_2pqe6Ylo2J6DrsZmuhMo9vg",
   authDomain: "mathcombat.firebaseapp.com",
   databaseURL: "https://mathcombat-default-rtdb.firebaseio.com",
@@ -171,7 +173,7 @@ firebase.initializeApp({
   messagingSenderId: "613800561121",
   appId: "1:613800561121:web:09181e422452585e87eaa0"
 });
-const db = firebase.database();
+const db = getDatabase(app);
 
 const QUESTIONS = [
   { topic:"Calculo", q:"Cual es la derivada de f(x) = x^3 + 2x?", opts:["3x^2 + 2","3x^2 + 2x","x^2 + 2","3x + 2"], ans:0 },
@@ -200,8 +202,7 @@ let myName="", myRole="", roomCode="", roomRef=null;
 let timerInterval=null, timeLeft=30, answered=false;
 let currentConfig={numQ:10,timeLimit:30};
 let currentNames={host:"",guest:""};
-let lastQIdx=-1;
-let gameListener=null;
+let lastQIdx=-1, gameListener=null;
 
 function showScreen(id){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -215,18 +216,18 @@ function genCode(){
   return s;
 }
 
-async function createRoom(){
+// Exponer funciones al scope global para los onclick del HTML
+window.createRoom = async function(){
   myName=document.getElementById("home-name").value.trim();
   if(!myName){document.getElementById("home-log").textContent="Escribe tu nombre primero";return;}
   myRole="host";
   roomCode=genCode();
-  roomRef=db.ref("rooms/"+roomCode);
-  await roomRef.set({host:myName,guest:"",status:"waiting",config:{numQ:10,timeLimit:30},game:null});
-  roomRef.onDisconnect().remove();
+  roomRef=ref(db,"rooms/"+roomCode);
+  await set(roomRef,{host:myName,guest:"",status:"waiting",config:{numQ:10,timeLimit:30},game:null});
   document.getElementById("lobby-code").textContent=roomCode;
   showScreen("screen-lobby");
 
-  roomRef.child("guest").on("value",snap=>{
+  onValue(ref(db,"rooms/"+roomCode+"/guest"),snap=>{
     const g=snap.val();
     if(g){
       document.getElementById("lobby-status-title").textContent=g+" se unio!";
@@ -239,69 +240,65 @@ async function createRoom(){
     }
   });
 
-  roomRef.child("status").on("value",snap=>{
+  onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
     if(snap.val()==="playing") initGame();
   });
-}
+};
 
-async function joinRoom(){
+window.joinRoom = async function(){
   myName=document.getElementById("home-name").value.trim();
   const code=document.getElementById("join-code").value.trim().toUpperCase();
   if(!myName){document.getElementById("home-log").textContent="Escribe tu nombre primero";return;}
   if(code.length!==4){document.getElementById("home-log").textContent="El codigo debe tener 4 caracteres";return;}
   roomCode=code;
-  roomRef=db.ref("rooms/"+roomCode);
-  const snap=await roomRef.once("value");
+  roomRef=ref(db,"rooms/"+roomCode);
+  const snap=await once(roomRef,"value");
   if(!snap.exists()){document.getElementById("home-log").textContent="Sala no encontrada";return;}
   const data=snap.val();
   if(data.status==="playing"){document.getElementById("home-log").textContent="La sala ya esta en juego";return;}
   if(data.guest&&data.guest!==""){document.getElementById("home-log").textContent="La sala ya tiene dos jugadores";return;}
   myRole="guest";
-  await roomRef.child("guest").set(myName);
-  roomRef.onDisconnect().child("guest").remove();
+  await update(roomRef,{guest:myName});
   document.getElementById("guest-lobby-info").textContent="Sala: "+roomCode+" — Anfitrion: "+data.host;
   showScreen("screen-guest-lobby");
 
-  roomRef.child("status").on("value",snap=>{
+  onValue(ref(db,"rooms/"+roomCode+"/status"),snap=>{
     if(snap.val()==="playing") initGame();
   });
-}
+};
 
-async function hostStartGame(){
+window.hostStartGame = async function(){
   const numQ=parseInt(document.getElementById("lobby-numq").value);
   const timeLimit=parseInt(document.getElementById("lobby-time").value);
   const qList=shuffle(QUESTIONS).slice(0,numQ);
-  await roomRef.update({
+  await update(roomRef,{
     status:"playing",
     config:{numQ,timeLimit},
     game:{qList:qList,qIdx:0,turn:0,scores:[0,0],phase:"question",ts:Date.now()}
   });
-}
+};
 
-function initGame(){
-  // Limpiar listener anterior si existe
-  if(gameListener) roomRef.child("game").off("value",gameListener);
+async function initGame(){
+  if(gameListener) off(ref(db,"rooms/"+roomCode+"/game"),gameListener);
+  const snap=await once(ref(db,"rooms/"+roomCode),"value");
+  const data=snap.val();
+  if(!data) return;
+  currentConfig=data.config;
+  currentNames.host=data.host;
+  currentNames.guest=data.guest;
+  document.getElementById("gname-p1").textContent=data.host;
+  document.getElementById("gname-p2").textContent=data.guest;
+  lastQIdx=-1;
+  showScreen("screen-game");
 
-  roomRef.once("value").then(snap=>{
-    const data=snap.val();
-    currentConfig=data.config;
-    currentNames.host=data.host;
-    currentNames.guest=data.guest;
-    document.getElementById("gname-p1").textContent=data.host;
-    document.getElementById("gname-p2").textContent=data.guest;
-    lastQIdx=-1;
-    showScreen("screen-game");
-
-    gameListener=snap=>{
-      const g=snap.val();
-      if(!g) return;
-      if(g.phase==="finished"){showResult(g);return;}
-      if(g.phase==="question" && g.qIdx!==lastQIdx){
-        lastQIdx=g.qIdx;
-        renderQuestion(g);
-      }
-    };
-    roomRef.child("game").on("value",gameListener);
+  gameListener=onValue(ref(db,"rooms/"+roomCode+"/game"),snap=>{
+    const g=snap.val();
+    if(!g) return;
+    if(g.phase==="finished"){showResult(g);return;}
+    if(g.phase==="question"&&g.qIdx!==lastQIdx){
+      lastQIdx=g.qIdx;
+      renderQuestion(g);
+    }
   });
 }
 
@@ -311,7 +308,6 @@ function renderQuestion(g){
   const q=g.qList[g.qIdx];
   const names=[currentNames.host,currentNames.guest];
   const isMyTurn=(myRole==="host"&&g.turn===0)||(myRole==="guest"&&g.turn===1);
-
   document.getElementById("turn-name").textContent=names[g.turn];
   document.getElementById("sc-p1").className="score-card"+(g.turn===0?" active":"");
   document.getElementById("sc-p2").className="score-card"+(g.turn===1?" active":"");
@@ -323,7 +319,6 @@ function renderQuestion(g){
   document.getElementById("status-msg").textContent="";
   document.getElementById("status-msg").className="status";
   document.getElementById("game-info").textContent=isMyTurn?"Es tu turno — responde!":"Esperando al oponente...";
-
   const opts=document.getElementById("options");
   opts.innerHTML="";
   q.opts.forEach((o,i)=>{
@@ -334,7 +329,6 @@ function renderQuestion(g){
     if(isMyTurn) btn.onclick=()=>submitAnswer(i,g);
     opts.appendChild(btn);
   });
-
   if(isMyTurn){
     timeLeft=currentConfig.timeLimit;
     updateBar(currentConfig.timeLimit);
@@ -368,9 +362,8 @@ async function submitAnswer(idx,g){
   const nextIdx=g.qIdx+1;
   const finished=nextIdx>=g.qList.length;
   setTimeout(async()=>{
-    await roomRef.child("game").update({
-      scores:newScores,
-      qIdx:nextIdx,
+    await update(ref(db,"rooms/"+roomCode+"/game"),{
+      scores:newScores,qIdx:nextIdx,
       turn:g.turn===0?1:0,
       phase:finished?"finished":"question",
       ts:Date.now()
@@ -387,7 +380,7 @@ function updateBar(total){
 
 function showResult(g){
   clearInterval(timerInterval);
-  if(gameListener)roomRef.child("game").off("value",gameListener);
+  if(gameListener) off(ref(db,"rooms/"+roomCode+"/game"));
   showScreen("screen-result");
   const s0=g.scores[0],s1=g.scores[1];
   let winner,sub;
@@ -400,27 +393,27 @@ function showResult(g){
   document.getElementById("res-l2").textContent=currentNames.guest;
   document.getElementById("res-p1").textContent=s0+" pts";
   document.getElementById("res-p2").textContent=s1+" pts";
-  if(myRole==="host")setTimeout(()=>roomRef.remove(),3000);
+  if(myRole==="host") setTimeout(()=>remove(roomRef),3000);
 }
 
-function leaveRoom(){
+window.leaveRoom = function(){
   clearInterval(timerInterval);
-  if(gameListener&&roomRef)roomRef.child("game").off("value",gameListener);
+  if(gameListener) off(ref(db,"rooms/"+roomCode+"/game"));
   if(roomRef){
-    if(myRole==="host")roomRef.remove();
-    else roomRef.child("guest").remove();
+    if(myRole==="host") remove(roomRef);
+    else update(roomRef,{guest:""});
   }
-  roomRef=null; gameListener=null; lastQIdx=-1;
+  roomRef=null;gameListener=null;lastQIdx=-1;
   goHome();
-}
+};
 
-function goHome(){
-  lastQIdx=-1; answered=false;
+window.goHome = function(){
+  lastQIdx=-1;answered=false;
   clearInterval(timerInterval);
   document.getElementById("home-log").textContent="";
   document.getElementById("join-code").value="";
   showScreen("screen-home");
-}
+};
 </script>
 </body>
 </html>

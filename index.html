@@ -918,17 +918,20 @@ function syncGameState(g){
     return;
   }
   if(g.phase==="special_done"){
-    // El efecto ya fue aplicado — solo cerrar modales si siguen abiertos
     closeModal("modal-special");
     closeModal("modal-thief");
     closeModal("modal-coin");
     closeModal("modal-roulette");
   }
+  // Al entrar a select o answer resetear el guard de efectos especiales
+  if(g.phase==="select"||g.phase==="answer"){
+    specialEffectApplied=false;
+  }
 
   closeModal("modal-coin");
   closeModal("modal-roulette");
 
-  if(g.phase==="select"){
+  if(g.phase==="select" || g.phase==="special_done"){
     document.getElementById("phase-label").textContent=isMyTurn?"Elige una carta para atacar":"Esperando al oponente...";
     document.getElementById("atk-display").style.display="none";
     document.getElementById("q-card").style.display="none";
@@ -1024,7 +1027,7 @@ function renderMyHand(hand, phase, isMyTurn){
   document.getElementById("hand-title").textContent="Tu mano ("+available+" cartas)";
   hand.forEach((card,idx)=>{
     const div=document.createElement("div");
-    const canClick=!card.used && isMyTurn && phase==="select";
+    const canClick=!card.used && isMyTurn && (phase==="select" || phase==="special_done");
     div.className="card-item "+card.color+(card.used?" used":"")+(canClick?"":" disabled");
     div.innerHTML=`
       <div class="card-level">${card.label}</div>
@@ -1042,6 +1045,8 @@ async function selectCard(cardIdx, card){
   const snap=await get(ref(db,"rooms/"+roomCode+"/game"));
   let g=snap.val();if(!g)return;
   g=normalizeGame(g);
+  // Aceptar tanto select como special_done como fases validas para jugar
+  if(g.phase!=="select" && g.phase!=="special_done") return;
   const myIdx=myRole==="host"?0:1;
 
   // Verificar que la carta en ese indice no fue ya usada
@@ -1187,6 +1192,8 @@ function showThiefAnimation(g,myIdx,oppIdx){
 // =====================================================================
 // EFECTOS ESPECIALES
 // =====================================================================
+let specialEffectApplied = false; // guard contra re-ejecucion multiple
+
 async function applySpecialEffect(g,myIdx,oppIdx){
   g=normalizeGame(g);
   const card=g.attackCard;
@@ -1197,53 +1204,54 @@ async function applySpecialEffect(g,myIdx,oppIdx){
   openModal("modal-special");
   document.getElementById("sp-icon").textContent=card.icon||"✨";
   document.getElementById("sp-title").textContent=card.name;
-  // Ambos ven el boton continuar
   document.getElementById("btn-sp-ok").style.display="block";
 
   if(by!==myIdx){
-    // Soy el que recibe el efecto — solo muestro info, no aplico nada
     document.getElementById("sp-desc").textContent="Tu oponente uso: "+card.desc;
     return;
   }
 
-  // Soy quien jugo la carta — aplico el efecto en Firebase
-  // Leer estado fresco para evitar conflictos
+  // Solo el que jugo la carta aplica el efecto — y solo una vez
+  if(specialEffectApplied) return;
+  specialEffectApplied=true;
+
   const freshSnap=await get(ref(db,"rooms/"+roomCode+"/game"));
   const gFresh=normalizeGame(freshSnap.val());
-  if(!gFresh)return;
+  if(!gFresh){specialEffectApplied=false;return;}
+
+  // Verificar que aun estamos en special_effect (no fue ya procesado)
+  if(gFresh.phase!=="special_effect"){specialEffectApplied=false;return;}
 
   const newHP=[...gFresh.hp];
   const newShields=[...gFresh.shields];
-  const newDefHP=gFresh.defenseHP&&!Array.isArray(gFresh.defenseHP)?Object.values(gFresh.defenseHP):[...(gFresh.defenseHP||[0,0])];
+  const newDefHP=gFresh.defenseHP&&!Array.isArray(gFresh.defenseHP)
+    ?Object.values(gFresh.defenseHP)
+    :[...(gFresh.defenseHP||[0,0])];
   const newHands=JSON.parse(JSON.stringify(gFresh.hands));
   let desc="";
 
   if(card.id==="shield"){
     newDefHP[by]=MAX_DEF;
     desc="Activas un escudo de "+MAX_DEF+" HP de defensa!";
+
   } else if(card.id==="vampire"){
     const steal=Math.min(20,newHP[oppIdx]);
     newHP[oppIdx]=Math.max(0,newHP[oppIdx]-steal);
     newHP[by]=Math.min(MAX_HP,newHP[by]+steal);
     desc="Robas "+steal+" HP al oponente!";
+
   } else if(card.id==="thief"){
     const oppAvail=newHands[oppIdx].filter(c=>!c.used);
     if(oppAvail.length>0){
-      // Elegir carta aleatoria por indice real en el array
       const randIdx=Math.floor(Math.random()*oppAvail.length);
       const stolen=oppAvail[randIdx];
-      // Encontrar indice real en newHands[oppIdx] comparando por id
       const realIdx=newHands[oppIdx].findIndex(c=>c.id===stolen.id&&!c.used);
       if(realIdx!==-1) newHands[oppIdx][realIdx].used=true;
       const stolenCard={...stolen,id:"stolen"+Date.now(),used:false};
       newHands[by].push(stolenCard);
-      desc="Robas una carta al oponente!";
-      // Escribir fase especial con info del robo para la animacion
+      specialEffectApplied=false; // resetear antes del return
       await update(ref(db,"rooms/"+roomCode+"/game"),{
-        hp:newHP,
-        shields:newShields,
-        defenseHP:newDefHP,
-        hands:newHands,
+        hp:newHP, shields:newShields, defenseHP:newDefHP, hands:newHands,
         phase:"thief_anim",
         thiefBy:by,
         thiefOppCount:oppAvail.length,
@@ -1252,37 +1260,37 @@ async function applySpecialEffect(g,myIdx,oppIdx){
         attackCard:null,
         ts:Date.now()
       });
-      return; // salir — la animacion manejara el resto
+      return;
     } else {
       desc="El oponente no tiene cartas disponibles!";
     }
+
   } else if(card.id==="fourier"){
-    // Separar usadas y disponibles de cada jugador
     const myUsed=newHands[by].filter(c=>c.used);
     const myAvail=newHands[by].filter(c=>!c.used);
     const oppUsed=newHands[oppIdx].filter(c=>c.used);
     const oppAvail=newHands[oppIdx].filter(c=>!c.used);
-    // Intercambiar solo las disponibles
-    newHands[by]=[...myUsed,...oppAvail];
-    newHands[oppIdx]=[...oppUsed,...myAvail];
-    desc="Todas las cartas disponibles fueron intercambiadas!";
+    // Solo intercambiar si al menos uno tiene cartas disponibles
+    if(myAvail.length>0||oppAvail.length>0){
+      newHands[by]=[...myUsed,...oppAvail];
+      newHands[oppIdx]=[...oppUsed,...myAvail];
+      desc="Cartas intercambiadas! Tu tienes "+oppAvail.length+" nuevas cartas.";
+    } else {
+      desc="Ninguno tiene cartas disponibles para intercambiar!";
+    }
   }
 
   document.getElementById("sp-desc").textContent=desc;
 
   const finished=newHP[0]<=0||newHP[1]<=0;
-  // Escribir efecto en Firebase con phase="special_done"
-  // El modal de ambos mostrara el resultado y al cerrar se pasara el turno
   await update(ref(db,"rooms/"+roomCode+"/game"),{
-    hp:newHP,
-    shields:newShields,
-    defenseHP:newDefHP,
-    hands:newHands,
-    phase: finished ? "finished" : "special_done",
-    turn: g.turn===0?1:0,
+    hp:newHP, shields:newShields, defenseHP:newDefHP, hands:newHands,
+    phase:finished?"finished":"special_done",
+    turn:g.turn===0?1:0,
     attackCard:null,
     ts:Date.now()
   });
+  specialEffectApplied=false;
 }
 
 // =====================================================================

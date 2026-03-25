@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Combat</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; }
+
+.screen { display: none; max-width: 680px; margin: auto; padding: 2rem 1rem; }
+.screen.active { display: block; }
+
+h1 { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+.sub { font-size: 14px; color: #666; margin-bottom: 2rem; }
+
+.card { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+
+label { font-size: 13px; color: #555; display: block; margin-bottom: 4px; margin-top: 12px; }
+input, select { width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; outline: none; }
+input:focus, select:focus { border-color: #4A80D4; }
+
+.btn { display: block; width: 100%; padding: 12px; font-size: 15px; font-weight: 500; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; cursor: pointer; margin-top: 1rem; transition: background 0.15s; }
+.btn:hover { background: #f5f5f0; }
+.btn-primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.btn-primary:hover { background: #333; }
+.btn-danger { background: #fff; color: #c0392b; border-color: #e0b0ae; }
+
+.room-code { font-size: 36px; font-weight: 700; letter-spacing: 8px; text-align: center; padding: 1rem; background: #f5f5f0; border-radius: 8px; margin: 1rem 0; color: #1a1a1a; }
+
+.scores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+.score-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem; }
+.score-card.active { border: 2px solid #4A80D4; }
+.score-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+.score-name { font-size: 15px; font-weight: 500; margin: 2px 0; }
+.score-pts { font-size: 26px; font-weight: 600; }
+
+.timer-wrap { background: #eee; border-radius: 99px; height: 6px; margin-bottom: 1.25rem; overflow: hidden; }
+.timer-bar { height: 100%; border-radius: 99px; transition: width 1s linear, background 0.5s; background: #4A80D4; }
+
+.turn-box { text-align: center; font-size: 13px; color: #666; margin-bottom: 0.75rem; }
+.turn-box span { font-weight: 600; color: #1a1a1a; }
+
+.progress { font-size: 12px; color: #888; text-align: center; margin-bottom: 0.75rem; }
+
+.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; font-weight: 500; }
+.badge-calc { background: #E6F0FB; color: #1a4a8a; }
+.badge-ode  { background: #EDE9FD; color: #4a2a8a; }
+
+.q-text { font-size: 16px; line-height: 1.6; margin-bottom: 1.25rem; color: #1a1a1a; }
+
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opt-btn { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 0.75rem 1rem; font-size: 14px; color: #1a1a1a; cursor: pointer; text-align: left; transition: background 0.15s; }
+.opt-btn:hover:not(:disabled) { background: #f5f5f0; }
+.opt-btn.correct { background: #eafaee; border-color: #2ecc71; color: #1a6e36; }
+.opt-btn.wrong   { background: #faeaea; border-color: #e74c3c; color: #7a1a1a; }
+.opt-btn:disabled { cursor: default; }
+
+.status { font-size: 13px; text-align: center; margin: 0.75rem 0; min-height: 20px; color: #888; }
+.status.correct { color: #1a6e36; font-weight: 500; }
+.status.wrong   { color: #c0392b; font-weight: 500; }
+
+.waiting-msg { text-align: center; padding: 2rem; }
+.waiting-msg .big { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+.waiting-msg .small { font-size: 13px; color: #666; }
+.dot-anim::after { content: ''; animation: dots 1.5s infinite; }
+@keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+
+.result-winner { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+.result-sub { font-size: 14px; color: #666; text-align: center; margin-bottom: 1.5rem; }
+.result-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+
+.log { font-size: 12px; color: #aaa; text-align: center; margin-top: 1rem; min-height: 16px; }
+
+.divider { text-align: center; font-size: 12px; color: #bbb; margin: 1rem 0; }
+</style>
+</head>
+<body>
+
+<!-- PANTALLA 1: INICIO -->
+<div class="screen active" id="screen-home">
+  <h1>Math Combat</h1>
+  <p class="sub">Duelo matemático multijugador — Cálculo y EDOs</p>
+
+  <div class="card">
+    <label>Tu nombre</label>
+    <input type="text" id="home-name" placeholder="Escribe tu nombre" maxlength="20" />
+
+    <div class="divider">— ¿Qué quieres hacer? —</div>
+
+    <button class="btn btn-primary" onclick="createRoom()">Crear sala nueva</button>
+    
+    <div style="margin-top:1rem;">
+      <label>Código de sala (para unirte)</label>
+      <input type="text" id="join-code" placeholder="Ej: A3F7" maxlength="4" style="text-transform:uppercase; letter-spacing:4px; font-size:18px;" />
+      <button class="btn" onclick="joinRoom()">Unirse a sala</button>
+    </div>
+  </div>
+  <div class="log" id="home-log"></div>
+</div>
+
+<!-- PANTALLA 2: SALA DE ESPERA (HOST) -->
+<div class="screen" id="screen-lobby">
+  <h1>Sala creada</h1>
+  <p class="sub">Comparte este código con tu oponente</p>
+  <div class="card">
+    <div class="room-code" id="lobby-code">----</div>
+    <p style="font-size:13px;color:#666;text-align:center;margin-bottom:1rem;">El otro jugador debe ingresar este código en su dispositivo</p>
+
+    <label>Preguntas por partida</label>
+    <select id="lobby-numq">
+      <option value="6">6 preguntas</option>
+      <option value="10" selected>10 preguntas</option>
+      <option value="14">14 preguntas</option>
+    </select>
+
+    <label>Tiempo por pregunta</label>
+    <select id="lobby-time">
+      <option value="20">20 segundos</option>
+      <option value="30" selected>30 segundos</option>
+      <option value="45">45 segundos</option>
+    </select>
+
+    <div class="waiting-msg">
+      <div class="big">Esperando oponente<span class="dot-anim"></span></div>
+      <div class="small" id="lobby-status">Nadie conectado aún</div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-start" style="display:none;" onclick="hostStartGame()">Iniciar partida</button>
+    <button class="btn btn-danger" onclick="leaveRoom()">Cancelar</button>
+  </div>
+</div>
+
+<!-- PANTALLA 3: SALA DE ESPERA (GUEST) -->
+<div class="screen" id="screen-guest-lobby">
+  <h1>Sala encontrada</h1>
+  <div class="card">
+    <div class="waiting-msg">
+      <div class="big">Conectado</div>
+      <div class="small">Esperando que el anfitrión inicie la partida<span class="dot-anim"></span></div>
+    </div>
+    <button class="btn btn-danger" onclick="leaveRoom()">Salir</button>
+  </div>
+</div>
+
+<!-- PANTALLA 4: JUEGO -->
+<div class="screen" id="screen-game">
+  <div class="scores">
+    <div class="score-card" id="sc-p1">
+      <div class="score-label">Jugador 1</div>
+      <div class="score-name" id="gname-p1">—</div>
+      <div class="score-pts" id="gpts-p1">0</div>
+    </div>
+    <div class="score-card" id="sc-p2">
+      <div class="score-label">Jugador 2</div>
+      <div class="score-name" id="gname-p2">—</div>
+      <div class="score-pts" id="gpts-p2">0</div>
+    </div>
+  </div>
+
+  <div class="timer-wrap">
+    <div class="timer-bar" id="timer-bar" style="width:100%"></div>
+  </div>
+
+  <div class="turn-box">Turno de <span id="turn-name">—</span></div>
+  <div class="progress" id="progress-txt">Pregunta 1 de 10</div>
+
+  <div class="card">
+    <div id="q-badge"></div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <div class="status" id="status-msg"></div>
+  <div class="log" id="game-log"></div>
+</div>
+
+<!-- PANTALLA 5: RESULTADO -->
+<div class="screen" id="screen-result">
+  <div class="card">
+    <div class="result-winner" id="res-winner"></div>
+    <div class="result-sub" id="res-sub"></div>
+    <div class="result-scores">
+      <div class="score-card">
+        <div class="score-label" id="res-l1"></div>
+        <div class="score-pts" id="res-p1"></div>
+      </div>
+      <div class="score-card">
+        <div class="score-label" id="res-l2"></div>
+        <div class="score-pts" id="res-p2"></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="goHome()">Volver al inicio</button>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// =====================================================================
+// CONFIGURACION FIREBASE — reemplaza databaseURL con tu URL real
+// =====================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyBJX7E8Svv_2pqe6Ylo2J6DrsZmuhMo9vg",
+  authDomain: "mathcombat.firebaseapp.com",
+  databaseURL: "https://mathcombat-default-rtdb.firebaseio.com",
+  projectId: "mathcombat",
+  storageBucket: "mathcombat.firebasestorage.app",
+  messagingSenderId: "613800561121",
+  appId: "1:613800561121:web:09181e422452585e87eaa0",
+  measurementId: "G-LPVHF4PTZN"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// =====================================================================
+// BANCO DE PREGUNTAS
+// =====================================================================
+const QUESTIONS = [
+  { topic:"Calculo", q:"Cual es la derivada de f(x) = x^3 + 2x?", opts:["3x^2 + 2","3x^2 + 2x","x^2 + 2","3x + 2"], ans:0 },
+  { topic:"Calculo", q:"Cuanto vale la integral de 0 a 1 de x^2 dx?", opts:["1/2","1/3","1/4","2/3"], ans:1 },
+  { topic:"Calculo", q:"El limite de sen(x)/x cuando x tiende a 0 es:", opts:["0","infinito","1","No existe"], ans:2 },
+  { topic:"Calculo", q:"La derivada de e^x es:", opts:["x*e^(x-1)","e^x","e","1"], ans:1 },
+  { topic:"Calculo", q:"La derivada de ln(x) es:", opts:["1/x","ln(x)/x","x","1/x^2"], ans:0 },
+  { topic:"Calculo", q:"La integral de cos(x) dx es:", opts:["-sen(x) + C","sen(x) + C","cos(x) + C","-cos(x) + C"], ans:1 },
+  { topic:"Calculo", q:"Si f(x) = x*sen(x), entonces f'(x) es:", opts:["cos(x)","sen(x) + x*cos(x)","x*cos(x)","sen(x) - x*cos(x)"], ans:1 },
+  { topic:"Calculo", q:"La regla de la cadena para f(g(x)) da:", opts:["f'(x)*g'(x)","f(g'(x))","f'(g(x))*g'(x)","f'(g(x)) + g'(x)"], ans:2 },
+  { topic:"Calculo", q:"El Teorema Fundamental del Calculo relaciona:", opts:["Derivadas e integrales","Limites y series","Derivadas parciales","Integrales dobles"], ans:0 },
+  { topic:"Calculo", q:"La integral de 1/x dx es:", opts:["x + C","ln|x| + C","1/x^2 + C","-1/x^2 + C"], ans:1 },
+  { topic:"Calculo", q:"La derivada de tan(x) es:", opts:["sec^2(x)","cos^2(x)","-sec^2(x)","cot(x)"], ans:0 },
+  { topic:"Calculo", q:"Si f(x) = x^2 * e^x, entonces f'(x) es:", opts:["2x*e^x","x^2*e^x","(2x + x^2)*e^x","2x + e^x"], ans:2 },
+  { topic:"EDO", q:"La solucion general de y' = y es:", opts:["y = Cx","y = C*e^x","y = C + e^x","y = ln(x) + C"], ans:1 },
+  { topic:"EDO", q:"Que tipo de EDO es y'' + 4y = 0?", opts:["No lineal orden 1","Lineal orden 2 homogenea","Lineal orden 1","Bernoulli"], ans:1 },
+  { topic:"EDO", q:"La solucion de y' + y = 0 con y(0)=2 es:", opts:["y = 2*e^(-x)","y = 2*e^x","y = e^(-x) + 1","y = 2x + 2"], ans:0 },
+  { topic:"EDO", q:"El factor integrante de y' + P(x)y = Q(x) es:", opts:["e^P(x)","e^(integral de P(x))","integral de P(x)","1/P(x)"], ans:1 },
+  { topic:"EDO", q:"Las raices del polinomio caracteristico de y'' - y = 0 son:", opts:["r = +-i","r = 0 y 1","r = +-1","r = 1 doble"], ans:2 },
+  { topic:"EDO", q:"Que metodo resuelve y' = f(x,y) numericamente con pasos discretos?", opts:["Separacion de variables","Metodo de Euler","Factor integrante","Variacion de parametros"], ans:1 },
+  { topic:"EDO", q:"Si y'' + 2y' + y = 0, el polinomio caracteristico es:", opts:["r^2 + 2r + 1 = 0","r^2 - 2r + 1 = 0","r^2 + 2 = 0","r + 1 = 0"], ans:0 },
+  { topic:"EDO", q:"Una EDO separable tiene la forma:", opts:["y'' = f(x,y)","y' = f(x)*g(y)","y' + P(x)y = 0","y'' + P(x)y = Q(x)"], ans:1 },
+];
+
+// =====================================================================
+// ESTADO LOCAL
+// =====================================================================
+let myName = "";
+let myRole = "";      // "host" o "guest"
+let roomCode = "";
+let roomRef = null;
+let gameState = null;
+let timerInterval = null;
+let timeLeft = 30;
+let answered = false;
+let listeners = [];
+
+// =====================================================================
+// UTILIDADES
+// =====================================================================
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function log(screenId, msg){
+  const el = document.getElementById(screenId+"-log");
+  if(el) el.textContent = msg;
+}
+
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+
+function genCode(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for(let i=0;i<4;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+function detachListeners(){
+  listeners.forEach(({ref,event,fn}) => ref.off(event,fn));
+  listeners = [];
+}
+
+function listen(ref, event, fn){
+  ref.on(event, fn);
+  listeners.push({ref,event,fn});
+}
+
+// =====================================================================
+// CREAR SALA
+// =====================================================================
+async function createRoom(){
+  myName = document.getElementById("home-name").value.trim();
+  if(!myName){ log("home","Escribe tu nombre primero"); return; }
+  myRole = "host";
+  roomCode = genCode();
+  roomRef = db.ref("rooms/" + roomCode);
+
+  await roomRef.set({
+    host: myName,
+    guest: "",
+    status: "waiting",
+    config: { numQ: 10, timeLimit: 30 },
+    game: null
+  });
+
+  roomRef.onDisconnect().remove();
+
+  document.getElementById("lobby-code").textContent = roomCode;
+  document.getElementById("lobby-status").textContent = "Nadie conectado aun";
+  document.getElementById("btn-start").style.display = "none";
+  showScreen("screen-lobby");
+
+  const guestFn = snap => {
+    const guest = snap.val();
+    if(guest){
+      document.getElementById("lobby-status").textContent = guest + " se unio!";
+      document.getElementById("btn-start").style.display = "block";
+    } else {
+      document.getElementById("lobby-status").textContent = "Nadie conectado aun";
+      document.getElementById("btn-start").style.display = "none";
+    }
+  };
+  listen(roomRef.child("guest"), "value", guestFn);
+
+  const statusFn = snap => {
+    if(snap.val() === "playing") startGameScreen();
+  };
+  listen(roomRef.child("status"), "value", statusFn);
+}
+
+// =====================================================================
+// UNIRSE A SALA
+// =====================================================================
+async function joinRoom(){
+  myName = document.getElementById("home-name").value.trim();
+  const code = document.getElementById("join-code").value.trim().toUpperCase();
+  if(!myName){ log("home","Escribe tu nombre primero"); return; }
+  if(code.length !== 4){ log("home","El codigo debe tener 4 caracteres"); return; }
+
+  roomCode = code;
+  roomRef = db.ref("rooms/" + roomCode);
+  const snap = await roomRef.once("value");
+  if(!snap.exists()){ log("home","Sala no encontrada. Verifica el codigo"); return; }
+  if(snap.val().status !== "waiting"){ log("home","La sala ya esta en juego"); return; }
+
+  myRole = "guest";
+  await roomRef.child("guest").set(myName);
+  roomRef.onDisconnect().child("guest").remove();
+
+  showScreen("screen-guest-lobby");
+
+  const statusFn = snap => {
+    if(snap.val() === "playing") startGameScreen();
+  };
+  listen(roomRef.child("status"), "value", statusFn);
+}
+
+// =====================================================================
+// HOST INICIA PARTIDA
+// =====================================================================
+async function hostStartGame(){
+  const numQ = parseInt(document.getElementById("lobby-numq").value);
+  const timeLimit = parseInt(document.getElementById("lobby-time").value);
+  const snap = await roomRef.once("value");
+  const data = snap.val();
+
+  const qList = shuffle(QUESTIONS).slice(0, numQ);
+
+  await roomRef.update({
+    status: "playing",
+    config: { numQ, timeLimit },
+    game: {
+      qList: qList,
+      qIdx: 0,
+      turn: 0,
+      scores: [0, 0],
+      answered: false,
+      phase: "question"
+    }
+  });
+}
+
+// =====================================================================
+// INICIAR PANTALLA DE JUEGO (ambos jugadores)
+// =====================================================================
+async function startGameScreen(){
+  detachListeners();
+  showScreen("screen-game");
+
+  const snap = await roomRef.once("value");
+  const data = snap.val();
+  const hostName = data.host;
+  const guestName = data.guest;
+
+  document.getElementById("gname-p1").textContent = hostName;
+  document.getElementById("gname-p2").textContent = guestName;
+
+  const gameFn = snap => {
+    gameState = snap.val();
+    if(!gameState) return;
+    if(gameState.phase === "question") renderQuestion(data.config);
+    if(gameState.phase === "next") scheduleNext(data.config);
+    if(gameState.phase === "finished") showResult(hostName, guestName);
+  };
+  listen(roomRef.child("game"), "value", gameFn);
+}
+
+// =====================================================================
+// RENDERIZAR PREGUNTA
+// =====================================================================
+function renderQuestion(config){
+  clearInterval(timerInterval);
+  answered = false;
+
+  const g = gameState;
+  const q = g.qList[g.qIdx];
+  const names = [
+    document.getElementById("gname-p1").textContent,
+    document.getElementById("gname-p2").textContent
+  ];
+
+  document.getElementById("turn-name").textContent = names[g.turn];
+  document.getElementById("sc-p1").className = "score-card" + (g.turn===0?" active":"");
+  document.getElementById("sc-p2").className = "score-card" + (g.turn===1?" active":"");
+  document.getElementById("gpts-p1").textContent = g.scores[0];
+  document.getElementById("gpts-p2").textContent = g.scores[1];
+  document.getElementById("progress-txt").textContent = "Pregunta "+(g.qIdx+1)+" de "+g.qList.length;
+  document.getElementById("q-badge").innerHTML = '<span class="badge badge-'+(q.topic==="Calculo"?"calc":"ode")+'">'+q.topic+'</span>';
+  document.getElementById("q-text").textContent = q.q;
+  document.getElementById("status-msg").textContent = "";
+  document.getElementById("status-msg").className = "status";
+
+  const isMyTurn = (myRole==="host" && g.turn===0) || (myRole==="guest" && g.turn===1);
+
+  const opts = document.getElementById("options");
+  opts.innerHTML = "";
+  q.opts.forEach((o,i)=>{
+    const btn = document.createElement("button");
+    btn.className = "opt-btn";
+    btn.textContent = o;
+    btn.disabled = !isMyTurn;
+    if(isMyTurn) btn.onclick = () => submitAnswer(i, config);
+    opts.appendChild(btn);
+  });
+
+  timeLeft = config.timeLimit;
+  updateTimerBar(config.timeLimit);
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    updateTimerBar(config.timeLimit);
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      if(isMyTurn && !answered) submitAnswer(-1, config);
+    }
+  }, 1000);
+
+  document.getElementById("game-log").textContent = isMyTurn ? "Es tu turno!" : "Esperando respuesta del oponente...";
+}
+
+// =====================================================================
+// ENVIAR RESPUESTA
+// =====================================================================
+async function submitAnswer(idx, config){
+  if(answered) return;
+  answered = true;
+  clearInterval(timerInterval);
+
+  const g = gameState;
+  const q = g.qList[g.qIdx];
+  const correct = idx === q.ans;
+
+  const btns = document.querySelectorAll(".opt-btn");
+  btns.forEach(b => b.disabled = true);
+  if(idx >= 0) btns[idx].classList.add(correct ? "correct" : "wrong");
+  btns[q.ans].classList.add("correct");
+
+  const status = document.getElementById("status-msg");
+  if(correct){
+    status.textContent = "Correcto! +1 punto";
+    status.className = "status correct";
+  } else if(idx === -1){
+    status.textContent = "Tiempo! La respuesta era: " + q.opts[q.ans];
+    status.className = "status wrong";
+  } else {
+    status.textContent = "Incorrecto. La respuesta era: " + q.opts[q.ans];
+    status.className = "status wrong";
+  }
+
+  const newScores = [...g.scores];
+  if(correct) newScores[g.turn]++;
+  const nextIdx = g.qIdx + 1;
+  const finished = nextIdx >= g.qList.length;
+
+  setTimeout(async ()=>{
+    await roomRef.child("game").update({
+      scores: newScores,
+      qIdx: nextIdx,
+      turn: g.turn === 0 ? 1 : 0,
+      answered: false,
+      phase: finished ? "finished" : "question"
+    });
+  }, 1800);
+}
+
+// =====================================================================
+// MOSTRAR RESULTADO
+// =====================================================================
+function showResult(hostName, guestName){
+  clearInterval(timerInterval);
+  detachListeners();
+  showScreen("screen-result");
+
+  const g = gameState;
+  const s0 = g.scores[0], s1 = g.scores[1];
+  let winner, sub;
+  if(s0 > s1){ winner = "Gana " + hostName + "!"; sub = "Con " + s0 + " puntos contra " + s1; }
+  else if(s1 > s0){ winner = "Gana " + guestName + "!"; sub = "Con " + s1 + " puntos contra " + s0; }
+  else { winner = "Empate!"; sub = "Ambos con " + s0 + " puntos"; }
+
+  document.getElementById("res-winner").textContent = winner;
+  document.getElementById("res-sub").textContent = sub;
+  document.getElementById("res-l1").textContent = hostName;
+  document.getElementById("res-l2").textContent = guestName;
+  document.getElementById("res-p1").textContent = s0 + " pts";
+  document.getElementById("res-p2").textContent = s1 + " pts";
+
+  if(myRole === "host") roomRef.remove();
+}
+
+// =====================================================================
+// TIMER BAR
+// =====================================================================
+function updateTimerBar(total){
+  const pct = (timeLeft / total) * 100;
+  const bar = document.getElementById("timer-bar");
+  bar.style.width = pct + "%";
+  bar.style.background = pct > 50 ? "#4A80D4" : pct > 25 ? "#E8A020" : "#D04030";
+}
+
+// =====================================================================
+// SALIR / REINICIAR
+// =====================================================================
+function leaveRoom(){
+  clearInterval(timerInterval);
+  detachListeners();
+  if(myRole === "host" && roomRef) roomRef.remove();
+  else if(myRole === "guest" && roomRef) roomRef.child("guest").remove();
+  roomRef = null;
+  goHome();
+}
+
+function goHome(){
+  showScreen("screen-home");
+  document.getElementById("join-code").value = "";
+  log("home","");
+}
+</script>
+</body>
+</html>

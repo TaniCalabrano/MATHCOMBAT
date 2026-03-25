@@ -1719,57 +1719,104 @@ function showResult(g){
   document.getElementById("r-av2").innerHTML=AVS[cAv.guest]||AVS.robot;
   document.getElementById("r-p1").textContent=h0+" HP";
   document.getElementById("r-p2").textContent=h1+" HP";
-  document.getElementById("r-h1").textContent=g.hands[0].filter(c=>!c.used).length+" cartas restantes";
-  document.getElementById("r-h2").textContent=g.hands[1].filter(c=>!c.used).length+" cartas restantes";
+  document.getElementById("r-h1").textContent=(g.hands[0].filter(c=>!c.used).length)+" cartas restantes";
+  document.getElementById("r-h2").textContent=(g.hands[1].filter(c=>!c.used).length)+" cartas restantes";
   document.getElementById("rematch-status").textContent="";
   document.getElementById("btn-rematch").disabled=false;
   document.getElementById("btn-rematch").textContent="⚔️ Revancha";
 
-  // Escuchar si el oponente propone revancha o si ambos aceptaron
-  if(roomRef){
-    onValue(ref(db,"rooms/"+roomCode+"/rematch"),snap=>{
-      const r=snap.val();
-      if(!r) return;
-      const myIdx=myRole==="host"?0:1;
-      const oppIdx=1-myIdx;
+  if(!roomRef) return;
 
-      // Ambos aceptaron — el host inicia la revancha
-      if(r[0]===true && r[1]===true){
-        if(myRole==="host"){
-          // Limpiar listener de rematch antes de reiniciar
-          off(ref(db,"rooms/"+roomCode+"/rematch"));
-          hostStart();
-        }
-        return;
-      }
+  // Escuchar campo rematch en Firebase
+  const rematchRef=ref(db,"rooms/"+roomCode+"/rematch");
+  const rematchUnsub=onValue(rematchRef,snap=>{
+    // Normalizar — Firebase puede devolver objeto en lugar de array
+    let r=snap.val();
+    if(!r) return;
+    if(!Array.isArray(r)) r=Object.values(r);
 
-      // El oponente propuso revancha — yo aun no respondí
-      if(r[oppIdx]===true && r[myIdx]!==true){
-        const oppName=myRole==="host"?cNames.guest:cNames.host;
-        document.getElementById("rematch-status").textContent=oppName+" quiere revancha!";
-        document.getElementById("btn-rematch").textContent="✅ Aceptar revancha";
-        document.getElementById("btn-rematch").disabled=false;
-      }
+    const myIdx=myRole==="host"?0:1;
+    const oppIdx=1-myIdx;
 
-      // Yo propuse, esperando al oponente
-      if(r[myIdx]===true && r[oppIdx]!==true){
-        document.getElementById("rematch-status").textContent="Esperando respuesta del oponente...";
-        document.getElementById("btn-rematch").textContent="⏳ Esperando...";
-        document.getElementById("btn-rematch").disabled=true;
+    // Ambos aceptaron
+    if(r[0]===true && r[1]===true){
+      rematchUnsub(); // desuscribir
+      if(myRole==="host"){
+        // Host inicia la revancha
+        doRematch();
+      } else {
+        // Guest espera que status cambie a "coin"
+        document.getElementById("rematch-status").textContent="Iniciando revancha...";
+        const rematchStatusUnsub=onValue(ref(db,"rooms/"+roomCode+"/status"),snap2=>{
+          if(snap2.val()==="coin"){
+            rematchStatusUnsub();
+            initGame();
+          }
+        });
       }
-    });
+      return;
+    }
+
+    // El oponente propuso, yo no
+    if(r[oppIdx]===true && !r[myIdx]){
+      const oppName=myRole==="host"?cNames.guest:cNames.host;
+      document.getElementById("rematch-status").textContent=oppName+" quiere revancha!";
+      document.getElementById("btn-rematch").textContent="✅ Aceptar revancha";
+      document.getElementById("btn-rematch").disabled=false;
+    }
+
+    // Yo propuse, esperando
+    if(r[myIdx]===true && !r[oppIdx]){
+      document.getElementById("rematch-status").textContent="Esperando respuesta del oponente...";
+      document.getElementById("btn-rematch").textContent="⏳ Esperando...";
+      document.getElementById("btn-rematch").disabled=true;
+    }
+  });
+}
+
+async function doRematch(){
+  // Solo el host ejecuta esto
+  QS=[]; // limpiar para recargar
+  const snap=await get(roomRef);
+  const d=snap.val();
+  const topic=d.topic||"calculo_diferencial";
+  await loadQuestions(topic);
+  if(QS.length===0){
+    document.getElementById("rematch-status").textContent="Error cargando preguntas";
+    return;
   }
+  const h1=makeHand(QS),h2=makeHand(QS),hd=makeHiddenDeck(QS);
+  await update(roomRef,{
+    status:"coin",
+    rematch:[false,false],
+    game:{
+      hp:[MAX_HP,MAX_HP],
+      defenseHP:[0,0],
+      hands:[h1,h2],
+      hiddenDeck:hd,
+      hiddenIdx:0,
+      shields:[false,false],
+      turn:0,
+      phase:"coin",
+      coinResult:"",
+      hostChoice:"",
+      attackCard:null,
+      rouletteResult:"",
+      ts:Date.now()
+    }
+  });
+  // El host tambien inicia su propio juego
+  initGame();
 }
 
 async function requestRematch(){
   if(!roomRef) return;
   const myIdx=myRole==="host"?0:1;
-  // Leer estado actual de rematch
   const snap=await get(ref(db,"rooms/"+roomCode+"/rematch"));
-  const current=snap.val()||[false,false];
-  const newRematch=Array.isArray(current)?[...current]:Object.values(current);
-  newRematch[myIdx]=true;
-  await update(roomRef,{rematch:newRematch});
+  let current=snap.val()||[false,false];
+  if(!Array.isArray(current)) current=Object.values(current);
+  current[myIdx]=true;
+  await update(roomRef,{rematch:current});
 }
 
 // =====================================================================

@@ -457,7 +457,7 @@ input:focus,select:focus{border-color:#a78bfa;}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, update, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, update, onValue, off, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const app = initializeApp({
   apiKey:"AIzaSyBJX7E8Svv_2pqe6Ylo2J6DrsZmuhMo9vg",
@@ -829,16 +829,31 @@ function showTopicCoinModal(hostName,guestName,hostTopic,guestTopic,winner){
 // INIT GAME
 // =====================================================================
 async function initGame(){
+  // Evitar llamadas multiples (el listener puede disparar varias veces)
+  if(document.querySelector(".screen.active")?.id==="s-deal"||
+     document.querySelector(".screen.active")?.id==="s-game") return;
   if(gameUnsub)gameUnsub();
   closeModal("modal-topic");
-  const snap=await get(ref(db,"rooms/"+roomCode));
-  const d=snap.val();if(!d)return;
+
+  // Leer datos de la sala con reintentos por si topic aun no llego
+  let d=null;
+  for(let i=0;i<5;i++){
+    const snap=await get(ref(db,"rooms/"+roomCode));
+    d=snap.val();
+    if(d&&d.topic) break;
+    await new Promise(r=>setTimeout(r,400));
+  }
+  if(!d){return;}
+
   cNames.host=d.host;cNames.guest=d.guest;
   cAv.host=d.hostAv||"warrior";cAv.guest=d.guestAv||"robot";
 
-  // Cargar preguntas de la tematica guardada en Firebase (importante para el guest)
-  if(d.topic && QS.length===0){
-    await loadQuestions(d.topic);
+  // Siempre cargar preguntas desde Firebase — tanto host como guest
+  const topic=d.topic||"calculo_diferencial";
+  await loadQuestions(topic);
+  if(QS.length===0){
+    console.error("No se pudieron cargar las preguntas de "+topic);
+    return;
   }
 
   document.getElementById("fn-p1").textContent=d.host;
@@ -849,17 +864,17 @@ async function initGame(){
   document.getElementById("av-p2").innerHTML=AVS[cAv.guest]||AVS.robot;
   renderHP(0,MAX_HP);renderHP(1,MAX_HP);
 
-  // Obtener mi mano para la animación
+  // Obtener mi mano para la animación de reparto
   const gameSnap=await get(ref(db,"rooms/"+roomCode+"/game"));
   const gData=normalizeGame(gameSnap.val());
   const myIdx=myRole==="host"?0:1;
   const myHand=gData&&gData.hands?gData.hands[myIdx]:[];
 
-  // Mostrar animación de reparto primero
+  // Animación de reparto
   ss("s-deal");
   await animateDeal(myHand);
 
-  // Luego ir al juego
+  // Ir al juego
   ss("s-game");
 
   gameUnsub=onValue(ref(db,"rooms/"+roomCode+"/game"),snap=>{
@@ -1731,10 +1746,11 @@ function leaveRoom(){
   if(guestUnsub){guestUnsub();guestUnsub=null;}
   if(roomRef){
     off(ref(db,"rooms/"+roomCode+"/rematch"));
-    if(myRole==="host")remove(roomRef);
-    else update(roomRef,{guest:"",guestAv:""});
+    if(myRole==="host") remove(roomRef);
+    else update(roomRef,{guest:"",guestAv:"",guestTopic:""});
   }
   roomRef=null;
+  QS=[];
   goHome();
 }
 function goHome(){

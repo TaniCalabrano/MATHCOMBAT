@@ -152,6 +152,10 @@ input:focus,select:focus{border-color:#a78bfa;}
 
 .katex{color:#e8e8f0!important;}
 
+.def-wrap{margin-top:6px;padding-top:6px;border-top:1px solid #2a2a50;}
+.def-label{font-size:9px;color:#3b82f6;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.def-fill{background:#3b82f6!important;transition:width .6s,background .3s;}
+
 /* PANTALLA REPARTO */
 .deal-screen{text-align:center;padding:1rem 0;}
 .deal-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;}
@@ -236,21 +240,29 @@ input:focus,select:focus{border-color:#a78bfa;}
   <!-- Arena -->
   <div class="arena">
     <div class="fighter" id="f-p1">
-      <div class="shield-badge" id="shield-p1">🛡 Escudo</div>
       <div class="fname" id="fn-p1">—</div>
       <div class="frole" id="fr-p1">—</div>
       <div class="av" id="av-p1"></div>
       <div class="hp-wrap"><div class="hp-fill" id="hp-p1" style="width:100%;background:#10b981;"></div></div>
       <div class="hp-txt" id="ht-p1">100/100</div>
+      <div class="def-wrap" id="def-wrap-p1" style="display:none;">
+        <div class="def-label">🛡 Defensa</div>
+        <div class="hp-wrap" style="margin-top:2px;"><div class="hp-fill def-fill" id="def-p1" style="width:100%;background:#3b82f6;"></div></div>
+        <div class="hp-txt" id="dt-p1">30/30</div>
+      </div>
       <div class="dmgpop" id="dp-p1"></div>
     </div>
     <div class="fighter" id="f-p2">
-      <div class="shield-badge" id="shield-p2">🛡 Escudo</div>
       <div class="fname" id="fn-p2">—</div>
       <div class="frole" id="fr-p2">—</div>
       <div class="av" id="av-p2"></div>
       <div class="hp-wrap"><div class="hp-fill" id="hp-p2" style="width:100%;background:#10b981;"></div></div>
       <div class="hp-txt" id="ht-p2">100/100</div>
+      <div class="def-wrap" id="def-wrap-p2" style="display:none;">
+        <div class="def-label">🛡 Defensa</div>
+        <div class="hp-wrap" style="margin-top:2px;"><div class="hp-fill def-fill" id="def-p2" style="width:100%;background:#3b82f6;"></div></div>
+        <div class="hp-txt" id="dt-p2">30/30</div>
+      </div>
       <div class="dmgpop" id="dp-p2"></div>
     </div>
   </div>
@@ -311,7 +323,9 @@ input:focus,select:focus{border-color:#a78bfa;}
         <div class="rh" id="r-h2"></div>
       </div>
     </div>
-    <button class="btn btn-purple" id="btn-home">Nueva partida</button>
+    <button class="btn btn-purple" id="btn-rematch" style="margin-bottom:.5rem;">⚔️ Revancha</button>
+    <div class="info" id="rematch-status" style="min-height:18px;"></div>
+    <button class="btn" id="btn-home">Volver al inicio</button>
   </div>
 </div>
 
@@ -545,6 +559,26 @@ function renderHP(idx,hp){
   b.style.background=pct>60?"#10b981":pct>30?"#f59e0b":"#f87171";
   t.textContent=Math.max(0,hp)+"/"+MAX_HP;
 }
+
+const MAX_DEF=30;
+function renderDefense(idx,def){
+  const wrap=document.getElementById("def-wrap-p"+(idx+1));
+  const bar=document.getElementById("def-p"+(idx+1));
+  const txt=document.getElementById("dt-p"+(idx+1));
+  if(!def||def<=0){
+    wrap.style.display="none";
+    return;
+  }
+  wrap.style.display="block";
+  const pct=Math.max(0,(def/MAX_DEF)*100);
+  bar.style.width=pct+"%";
+  bar.style.background=pct>60?"#3b82f6":pct>30?"#6366f1":"#8b5cf6";
+  txt.textContent=Math.max(0,def)+"/"+MAX_DEF;
+}
+
+function setShield(idx,on){
+  // Ahora la barra de defensa reemplaza al badge — no hacer nada aqui
+}
 function popDmg(idx,txt,color){
   const el=document.getElementById("dp-p"+(idx+1));
   el.textContent=txt;el.style.color=color;
@@ -554,9 +588,6 @@ function animF(idx,cls){
   const el=document.getElementById("f-p"+(idx+1));
   el.classList.remove("hit","atk");void el.offsetWidth;el.classList.add(cls);
   setTimeout(()=>el.classList.remove(cls),500);
-}
-function setShield(idx,on){
-  document.getElementById("shield-p"+(idx+1)).classList.toggle("on",on);
 }
 function openModal(id){document.getElementById(id).classList.add("open");}
 function closeModal(id){document.getElementById(id).classList.remove("open");}
@@ -570,6 +601,7 @@ document.getElementById("btn-start").addEventListener("click",hostStart);
 document.getElementById("btn-cancel").addEventListener("click",leaveRoom);
 document.getElementById("btn-gleave").addEventListener("click",leaveRoom);
 document.getElementById("btn-home").addEventListener("click",goHome);
+document.getElementById("btn-rematch").addEventListener("click",requestRematch);
 document.getElementById("btn-surrender").addEventListener("click",()=>openModal("modal-surrender"));
 document.getElementById("btn-surrender-cancel").addEventListener("click",()=>closeModal("modal-surrender"));
 document.getElementById("btn-surrender-confirm").addEventListener("click",doSurrender);
@@ -623,12 +655,14 @@ async function joinRoom(){
 }
 
 async function hostStart(){
-  const snap=await get(roomRef);const d=snap.val();
+  const snap=await get(roomRef);
   const h1=makeHand(QS),h2=makeHand(QS),hd=makeHiddenDeck(QS);
   await update(roomRef,{
     status:"coin",
+    rematch:[false,false],
     game:{
       hp:[MAX_HP,MAX_HP],
+      defenseHP:[0,0],
       hands:[h1,h2],
       hiddenDeck:hd,
       hiddenIdx:0,
@@ -824,7 +858,10 @@ function syncGameState(g){
   g = normalizeGame(g);
   if(!g.hands||!g.hands[0]||!g.hands[1]) return;
   renderHP(0,g.hp[0]);renderHP(1,g.hp[1]);
-  setShield(0,g.shields[0]);setShield(1,g.shields[1]);
+  // Normalizar y renderizar defensa
+  const def=g.defenseHP&&!Array.isArray(g.defenseHP)?Object.values(g.defenseHP):g.defenseHP||[0,0];
+  renderDefense(0,def[0]||0);renderDefense(1,def[1]||0);
+  setShield(0,false);setShield(1,false);
 
   const myIdx = myRole==="host"?0:1;
   const oppIdx = 1-myIdx;
@@ -1050,12 +1087,13 @@ async function applySpecialEffect(g,myIdx,oppIdx){
 
   const newHP=[...gFresh.hp];
   const newShields=[...gFresh.shields];
+  const newDefHP=gFresh.defenseHP&&!Array.isArray(gFresh.defenseHP)?Object.values(gFresh.defenseHP):[...(gFresh.defenseHP||[0,0])];
   const newHands=JSON.parse(JSON.stringify(gFresh.hands));
   let desc="";
 
   if(card.id==="shield"){
-    newShields[by]=true;
-    desc="Tu proximo ataque sera bloqueado!";
+    newDefHP[by]=MAX_DEF;
+    desc="Activas un escudo de "+MAX_DEF+" HP de defensa!";
   } else if(card.id==="vampire"){
     const steal=Math.min(20,newHP[oppIdx]);
     newHP[oppIdx]=Math.max(0,newHP[oppIdx]-steal);
@@ -1094,6 +1132,7 @@ async function applySpecialEffect(g,myIdx,oppIdx){
   await update(ref(db,"rooms/"+roomCode+"/game"),{
     hp:newHP,
     shields:newShields,
+    defenseHP:newDefHP,
     hands:newHands,
     phase: finished ? "finished" : "special_done",
     turn: g.turn===0?1:0,
@@ -1223,33 +1262,63 @@ function showRouletteModal(g,myIdx,oppIdx){
 }
 
 async function applyDamage(g,defenderIdx,attackerIdx,baseDmg,mode){
-  // Leer estado fresco de Firebase y normalizar
   const snap=await get(ref(db,"rooms/"+roomCode+"/game"));
   const gFresh=normalizeGame(snap.val());
   g=normalizeGame(g);
   const newHP=[...(gFresh?gFresh.hp:g.hp)];
   const shields=[...(gFresh?gFresh.shields:g.shields)];
+  const rawDef=gFresh?(gFresh.defenseHP||[0,0]):(g.defenseHP||[0,0]);
+  const newDefHP=!Array.isArray(rawDef)?Object.values(rawDef):[...rawDef];
   let newHands=JSON.parse(JSON.stringify(gFresh?gFresh.hands:g.hands));
   let newHiddenIdx=gFresh?gFresh.hiddenIdx:0;
   const hiddenDeck=gFresh?(Array.isArray(gFresh.hiddenDeck)?gFresh.hiddenDeck:Object.values(gFresh.hiddenDeck||{})):[];
   let desc="";
+
+  // Funcion helper: aplica dano considerando barra de defensa
+  function dealDamage(targetIdx, dmg){
+    if(dmg<=0) return "Sin daño";
+    let remaining=dmg;
+    let msg="";
+    // Primero absorbe la defensa
+    if(newDefHP[targetIdx]>0){
+      const defAbs=Math.min(newDefHP[targetIdx],remaining);
+      newDefHP[targetIdx]=Math.max(0,newDefHP[targetIdx]-defAbs);
+      remaining-=defAbs;
+      if(remaining>0){
+        // La defensa se rompio y quedo daño residual
+        newHP[targetIdx]=Math.max(0,newHP[targetIdx]-remaining);
+        msg="Escudo roto! "+defAbs+" absorbido, "+remaining+" al HP ("+newHP[targetIdx]+" restante)";
+        popDmg(targetIdx,"-"+remaining+" HP","#f87171");
+      } else {
+        msg="Escudo absorbe "+defAbs+" de daño! ("+newDefHP[targetIdx]+" defensa restante)";
+        popDmg(targetIdx,"-"+defAbs+" DEF","#3b82f6");
+      }
+    } else {
+      newHP[targetIdx]=Math.max(0,newHP[targetIdx]-dmg);
+      msg="Recibes "+dmg+" HP de daño!";
+      popDmg(targetIdx,"-"+dmg,"#f87171");
+    }
+    animF(targetIdx,"hit");
+    return msg;
+  }
+
   if(mode==="full"){
-    if(shields[defenderIdx]){shields[defenderIdx]=false;desc="Escudo bloqueo el ataque!";}
-    else{newHP[defenderIdx]=Math.max(0,newHP[defenderIdx]-baseDmg);animF(defenderIdx,"hit");popDmg(defenderIdx,"-"+baseDmg,"#f87171");desc="Recibes "+baseDmg+" HP de daño!";}
+    desc=dealDamage(defenderIdx,baseDmg);
   } else if(mode==="none"){
     desc="Sin daño — respuesta correcta!";
   } else if(mode==="half"){
     const d=Math.ceil(baseDmg/2);
-    if(shields[defenderIdx]){shields[defenderIdx]=false;desc="Escudo bloqueo la mitad!";}
-    else{newHP[defenderIdx]=Math.max(0,newHP[defenderIdx]-d);animF(defenderIdx,"hit");popDmg(defenderIdx,"-"+d,"#f59e0b");desc="Recibes solo "+d+" HP!";}
+    desc=dealDamage(defenderIdx,d);
+    desc="Mitad del daño: "+desc;
   } else if(mode==="rebound"){
-    if(shields[attackerIdx]){shields[attackerIdx]=false;desc="El escudo bloqueo el rebote!";}
-    else{newHP[attackerIdx]=Math.max(0,newHP[attackerIdx]-baseDmg);animF(attackerIdx,"hit");popDmg(attackerIdx,"-"+baseDmg,"#f87171");desc="El daño rebota! "+baseDmg+" HP al atacante!";}
+    desc=dealDamage(attackerIdx,baseDmg);
+    desc="Daño rebota al atacante! "+desc;
   }
+
   document.getElementById("status-msg").textContent=desc;
   const newTurn=g.turn===0?1:0;
   const finished=newHP[0]<=0||newHP[1]<=0;
-  // Si el siguiente jugador no tiene cartas, robar de baraja oculta
+
   if(!finished && newHands[newTurn] && !newHands[newTurn].some(c=>!c.used)){
     if(hiddenDeck && newHiddenIdx<hiddenDeck.length){
       const newCard={...hiddenDeck[newHiddenIdx],id:"hd"+newHiddenIdx,used:false};
@@ -1257,8 +1326,9 @@ async function applyDamage(g,defenderIdx,attackerIdx,baseDmg,mode){
       newHiddenIdx++;
     }
   }
+
   await update(ref(db,"rooms/"+roomCode+"/game"),{
-    hp:newHP,shields,hands:newHands,hiddenIdx:newHiddenIdx,
+    hp:newHP,shields,defenseHP:newDefHP,hands:newHands,hiddenIdx:newHiddenIdx,
     phase:finished?"finished":"select",
     turn:newTurn,
     attackCard:null,
@@ -1321,7 +1391,55 @@ function showResult(g){
   document.getElementById("r-p2").textContent=h1+" HP";
   document.getElementById("r-h1").textContent=g.hands[0].filter(c=>!c.used).length+" cartas restantes";
   document.getElementById("r-h2").textContent=g.hands[1].filter(c=>!c.used).length+" cartas restantes";
-  if(myRole==="host")setTimeout(()=>remove(roomRef),4000);
+  document.getElementById("rematch-status").textContent="";
+  document.getElementById("btn-rematch").disabled=false;
+  document.getElementById("btn-rematch").textContent="⚔️ Revancha";
+
+  // Escuchar si el oponente propone revancha o si ambos aceptaron
+  if(roomRef){
+    onValue(ref(db,"rooms/"+roomCode+"/rematch"),snap=>{
+      const r=snap.val();
+      if(!r) return;
+      const myIdx=myRole==="host"?0:1;
+      const oppIdx=1-myIdx;
+
+      // Ambos aceptaron — el host inicia la revancha
+      if(r[0]===true && r[1]===true){
+        if(myRole==="host"){
+          // Limpiar listener de rematch antes de reiniciar
+          off(ref(db,"rooms/"+roomCode+"/rematch"));
+          hostStart();
+        }
+        return;
+      }
+
+      // El oponente propuso revancha — yo aun no respondí
+      if(r[oppIdx]===true && r[myIdx]!==true){
+        const oppName=myRole==="host"?cNames.guest:cNames.host;
+        document.getElementById("rematch-status").textContent=oppName+" quiere revancha!";
+        document.getElementById("btn-rematch").textContent="✅ Aceptar revancha";
+        document.getElementById("btn-rematch").disabled=false;
+      }
+
+      // Yo propuse, esperando al oponente
+      if(r[myIdx]===true && r[oppIdx]!==true){
+        document.getElementById("rematch-status").textContent="Esperando respuesta del oponente...";
+        document.getElementById("btn-rematch").textContent="⏳ Esperando...";
+        document.getElementById("btn-rematch").disabled=true;
+      }
+    });
+  }
+}
+
+async function requestRematch(){
+  if(!roomRef) return;
+  const myIdx=myRole==="host"?0:1;
+  // Leer estado actual de rematch
+  const snap=await get(ref(db,"rooms/"+roomCode+"/rematch"));
+  const current=snap.val()||[false,false];
+  const newRematch=Array.isArray(current)?[...current]:Object.values(current);
+  newRematch[myIdx]=true;
+  await update(roomRef,{rematch:newRematch});
 }
 
 // =====================================================================
@@ -1332,7 +1450,11 @@ function leaveRoom(){
   if(gameUnsub){gameUnsub();gameUnsub=null;}
   if(statusUnsub){statusUnsub();statusUnsub=null;}
   if(guestUnsub){guestUnsub();guestUnsub=null;}
-  if(roomRef){if(myRole==="host")remove(roomRef);else update(roomRef,{guest:"",guestAv:""});}
+  if(roomRef){
+    off(ref(db,"rooms/"+roomCode+"/rematch"));
+    if(myRole==="host")remove(roomRef);
+    else update(roomRef,{guest:"",guestAv:""});
+  }
   roomRef=null;
   goHome();
 }
